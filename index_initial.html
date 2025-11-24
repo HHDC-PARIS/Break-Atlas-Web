@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break Atlas | Worldwide Breaking Spot & Jam Locator</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #FF5722; /* Energetic Orange */
+            --dark: #121212;
+            --card-bg: #1E1E1E;
+            --text: #E0E0E0;
+            --text-sub: #A0A0A0;
+            --map-height: 40vh;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--dark); color: var(--text); overflow-x: hidden; }
+        
+        /* --- HEADER --- */
+        header {
+            position: fixed; top: 0; width: 100%; height: 60px;
+            background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 1000; border-bottom: 1px solid #333;
+        }
+        .brand { font-weight: 900; font-size: 1.2rem; letter-spacing: -0.5px; }
+        .brand span { color: var(--primary); }
+        .icon-btn { background: none; border: none; color: white; cursor: pointer; }
+
+        /* --- NAVIGATION (Hamburger) --- */
+        .nav-overlay {
+            position: fixed; top: 0; left: -100%; width: 80%; height: 100vh;
+            background: var(--card-bg); z-index: 1100; transition: 0.3s ease;
+            padding: 80px 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        }
+        .nav-overlay.active { left: 0; }
+        .nav-item { display: block; font-size: 1.5rem; margin-bottom: 20px; font-weight: 700; color: var(--text); text-decoration: none; }
+        .nav-item:hover { color: var(--primary); }
+        .close-nav { position: absolute; top: 20px; right: 20px; }
+
+        /* --- SEARCH BAR --- */
+        .search-container {
+            padding: 80px 20px 10px 20px;
+        }
+        .search-input {
+            width: 100%; padding: 12px 40px 12px 15px;
+            border-radius: 8px; border: 1px solid #333;
+            background: var(--card-bg); color: white; outline: none;
+        }
+        .search-wrapper { position: relative; }
+        .search-icon-abs { position: absolute; right: 10px; top: 10px; color: var(--text-sub); }
+
+        /* --- MAP --- */
+        #map { height: var(--map-height); width: 100%; z-index: 1; }
+
+        /* --- FILTERS --- */
+        .filters { display: flex; overflow-x: auto; padding: 15px 20px; gap: 10px; scrollbar-width: none; }
+        .chip { 
+            padding: 8px 16px; background: #333; border-radius: 20px; 
+            font-size: 0.85rem; white-space: nowrap; cursor: pointer; transition: 0.2s;
+        }
+        .chip.active { background: var(--primary); color: white; font-weight: 700; }
+
+        /* --- LISTINGS --- */
+        .listing-container { padding: 10px 20px 80px 20px; }
+        .section-title { margin-bottom: 15px; font-size: 1.1rem; font-weight: 700; }
+        
+        .card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s; cursor: pointer;
+        }
+        .card:active { transform: scale(0.98); }
+        .card-img { height: 150px; width: 100%; object-fit: cover; background-color: #333; }
+        .card-body { padding: 15px; }
+        .card-tag { 
+            display: inline-block; padding: 4px 8px; border-radius: 4px; 
+            font-size: 0.7rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase;
+        }
+        .tag-spot { background: #2196F3; }
+        .tag-jam { background: #E91E63; }
+        .tag-cypher { background: #FFC107; color: black; }
+        
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
+        .card-meta { font-size: 0.85rem; color: var(--text-sub); display: flex; align-items: center; gap: 5px; }
+        
+        /* --- FAB (Add Button) --- */
+        .fab {
+            position: fixed; bottom: 20px; right: 20px;
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--primary); color: white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 87, 34, 0.4);
+            border: none; cursor: pointer; z-index: 900;
+        }
+
+        /* --- DETAIL MODAL --- */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000;
+            display: flex; justify-content: center; align-items: flex-end;
+            visibility: hidden; opacity: 0; transition: 0.3s;
+        }
+        .modal.open { visibility: visible; opacity: 1; }
+        .modal-content {
+            background: var(--dark); width: 100%; max-width: 600px; height: 90vh;
+            border-radius: 20px 20px 0 0; padding: 0; overflow-y: auto; position: relative;
+        }
+        .modal-header-img { width: 100%; height: 250px; object-fit: cover; }
+        .modal-body { padding: 25px; }
+        .close-modal {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.5); border-radius: 50%; padding: 5px;
+            color: white; cursor: pointer;
+        }
+        .btn-primary {
+            width: 100%; background: var(--primary); border: none; padding: 15px;
+            color: white; font-weight: 700; border-radius: 8px; margin-top: 20px; cursor: pointer;
+        }
+        .btn-google {
+            background: white; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        /* --- SOCIAL PROFILE ELEMENTS --- */
+        .crew-pill { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px; background: #252525; border-radius: 8px; }
+        .crew-avatar { width: 30px; height: 30px; border-radius: 50%; background: #555; }
+        .btn-follow { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; margin-left: auto; cursor: pointer; }
+        .btn-follow.active { background: var(--primary); color: white; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <button class="icon-btn" onclick="toggleNav()"><span class="material-icons-round">menu</span></button>
+        <div class="brand">BREAK <span>ATLAS</span></div>
+        <button class="icon-btn" onclick="toggleAuth()"><span class="material-icons-round">account_circle</span></button>
+    </header>
+
+    <div class="nav-overlay" id="sideNav">
+        <button class="icon-btn close-nav" onclick="toggleNav()"><span class="material-icons-round">close</span></button>
+        <div style="margin-bottom: 30px; opacity: 0.5; font-size: 0.9rem;">MENU</div>
+        <a href="#" class="nav-item">Home</a>
+        <a href="#" class="nav-item">My Crews</a>
+        <a href="#" class="nav-item">Favorites</a>
+        <a href="#" class="nav-item">Settings</a>
+        <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #333;">
+            <p style="color: #666; font-size: 0.8rem;">Logged in as Guest</p>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <div class="search-wrapper">
+            <input type="text" class="search-input" placeholder="Search city, jam, or crew..." onkeyup="filterList(this.value)">
+            <span class="material-icons-round search-icon-abs">search</span>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="chip active" onclick="filterType('all', this)">All</div>
+        <div class="chip" onclick="filterType('spot', this)">Training Spots</div>
+        <div class="chip" onclick="filterType('jam', this)">Jams / Battles</div>
+        <div class="chip" onclick="filterType('cypher', this)">Open Cyphers</div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="listing-container">
+        <div class="section-title">Happening in Europe</div>
+        <div id="feed">
+            </div>
+    </div>
+
+    <button class="fab" onclick="alert('Please login to add a spot!')">
+        <span class="material-icons-round">add</span>
+    </button>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="close-modal" onclick="closeModal()">
+                <span class="material-icons-round">close</span>
+            </div>
+            <img src="" id="modalImg" class="modal-header-img">
+            <div class="modal-body">
+                <span class="card-tag" id="modalType"></span>
+                <h2 id="modalTitle" style="margin: 10px 0;"></h2>
+                <p id="modalLoc" style="color: var(--primary); display:flex; align-items:center; gap:5px;">
+                    <span class="material-icons-round" style="font-size:1rem">location_on</span> <span id="modalCity"></span>
+                </p>
+                
+                <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+                <h3>Schedule</h3>
+                <p id="modalTime" style="color: var(--text-sub); margin-top: 5px;"></p>
+
+                <div style="margin-top: 20px;">
+                    <h3>Organizers & Contacts</h3>
+                    <div class="crew-pill">
+                        <div class="crew-avatar"></div>
+                        <div>
+                            <div style="font-weight: bold;" id="modalCrew"></div>
+                            <div style="font-size: 0.7rem; color: #888;">Local Crew</div>
+                        </div>
+                        <button class="btn-follow" onclick="toggleFollow(this)">Follow</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h3>Description</h3>
+                    <p id="modalDesc" style="color: var(--text-sub); line-height: 1.5; margin-top:5px;"></p>
+                </div>
+
+                <button class="btn-primary">Get Directions</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="authModal">
+        <div class="modal-content" style="height: auto; padding-bottom: 40px;">
+            <div class="close-modal" onclick="toggleAuth()">
+                <span class="material-icons-round">close</span>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <h2>Join the Cypher</h2>
+                <p style="color: #999; margin-bottom: 30px;">Connect with breakers, save spots, and register for jams.</p>
+                
+                <button class="btn-primary btn-google" onclick="mockLogin()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
+                    Continue with Google
+                </button>
+                <p style="font-size: 0.8rem; margin-top: 15px; color: #555;">By continuing, you agree to our Terms.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // --- MOCK DATA ---
+        const spots = [
+            {
+                id: 1,
+                title: "Centquatre-Paris (104)",
+                type: "spot",
+                city: "Paris, France",
+                lat: 48.8905,
+                lng: 2.3730,
+                time: "Open Daily: 12:00 - 19:00",
+                crew: "Paris City Breakers",
+                desc: "One of the most iconic indoor training spots in Europe. Smooth floor, huge space, mirrors available in some halls. Respect the dancers and the tourists.",
+                img: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?q=80&w=800&auto=format&fit=crop"
+            },
+            {
+                id: 2,
+                title: "IBE Festival 2025",
+                type: "jam",
+                city: "Heerlen, Netherlands",
+                lat: 50.8882,
+                lng: 5.9795,
+                time: "August 14-16, 2025",
+                crew: "The Notorious IBE",
+                desc: "The ultimate Hip Hop dance festival. Cyphers everywhere, talk shows, battles, and parties. The central square is the main cypher spot.",
+                img: "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?q=80&w=800&auto=format&fit=crop"
+            },
+            {
+                id: 3,
+                title: "Berlin Hbf Tunnel",
+                type: "cypher",
+                city: "Berlin, Germany",
+                lat: 52.5251,
+                lng: 13.3694,
+                time: "Fridays: 20:00 - 23:00",
+                crew: "Berlin Street Rockers",
+                desc: "Underground vibe. Concrete floor (bring mats or knee pads), good acoustics. Meeting point for locals before heading to clubs.",
+                img: "https://images.unsplash.com/photo-1605125184567-4c27240a660f?q=80&w=800&auto=format&fit=crop"
+            },
+            {
+                id: 4,
+                title: "La Place Cultural Center",
+                type: "spot",
+                city: "Paris, France",
+                lat: 48.8613,
+                lng: 2.3444,
+                time: "Mon-Sat: 14:00 - 22:00",
+                crew: "La Place Staff",
+                desc: "Dedicated Hip Hop cultural center right in Les Halles. Booking required via their app. Professional floor and sound system.",
+                img: "https://images.unsplash.com/photo-1547153760-18fc86324498?q=80&w=800&auto=format&fit=crop"
+            },
+             {
+                id: 5,
+                title: "Outbreak Europe",
+                type: "jam",
+                city: "Banská Bystrica, Slovakia",
+                lat: 48.7363,
+                lng: 19.1462,
+                time: "July 25-28, 2025",
+                crew: "MG & The Bboys",
+                desc: "The dope jam in Slovakia. Known for the rawest cyphers and the 2vs2 battles. Accomodation nearby fills up fast.",
+                img: "https://images.unsplash.com/photo-1617953356289-c74319796e75?q=80&w=800&auto=format&fit=crop"
+            }
+        ];
+
+        // --- INITIALIZATION ---
+        let map;
+        let markers = [];
+
+        window.onload = () => {
+            initMap();
+            renderList(spots);
+        };
+
+        function initMap() {
+            // Initialize Leaflet Map (Centered on Europe)
+            map = L.map('map').setView([49.5, 12.5], 4);
+
+            // Dark Mode Tiles (CartoDB)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            addMarkers(spots);
+        }
+
+        function addMarkers(data) {
+            // Clear existing
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            data.forEach(spot => {
+                const color = spot.type === 'spot' ? '#2196F3' : (spot.type === 'jam' ? '#E91E63' : '#FFC107');
+                
+                // Custom Dot Marker
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color:${color}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow: 0 0 10px ${color};"></div>`,
+                    iconSize: [12, 12],
+                    iconAnchor: [6, 6]
+                });
+
+                const marker = L.marker([spot.lat, spot.lng], {icon: icon}).addTo(map);
+                marker.on('click', () => openModal(spot));
+                markers.push(marker);
+            });
+        }
+
+        function renderList(data) {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = '';
+
+            data.forEach(spot => {
+                const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
+                
+                const card = `
+                    <div class="card" onclick='openModal(${JSON.stringify(spot)})'>
+                        <img src="${spot.img}" class="card-img">
+                        <div class="card-body">
+                            <span class="card-tag ${tagClass}">${spot.type}</span>
+                            <div class="card-title">${spot.title}</div>
+                            <div class="card-meta">
+                                <span class="material-icons-round" style="font-size: 14px;">calendar_today</span> ${spot.time}
+                            </div>
+                            <div class="card-meta" style="margin-top:5px;">
+                                <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                feed.innerHTML += card;
+            });
+        }
+
+        // --- INTERACTION LOGIC ---
+
+        function openModal(spot) {
+            document.getElementById('modalTitle').innerText = spot.title;
+            document.getElementById('modalType').innerText = spot.type;
+            document.getElementById('modalType').className = `card-tag ${spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher')}`;
+            document.getElementById('modalCity').innerText = spot.city;
+            document.getElementById('modalTime').innerText = spot.time;
+            document.getElementById('modalDesc').innerText = spot.desc;
+            document.getElementById('modalCrew').innerText = spot.crew;
+            document.getElementById('modalImg').src = spot.img;
+            
+            document.getElementById('detailModal').classList.add('open');
+            
+            // Recenter map slightly
+            map.setView([spot.lat, spot.lng], 13);
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('open');
+        }
+
+        function toggleNav() {
+            document.getElementById('sideNav').classList.toggle('active');
+        }
+
+        function toggleAuth() {
+            document.getElementById('authModal').classList.toggle('open');
+        }
+
+        function filterType(type, el) {
+            // Update UI
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+
+            // Filter Data
+            if(type === 'all') {
+                renderList(spots);
+                addMarkers(spots);
+            } else {
+                const filtered = spots.filter(s => s.type === type);
+                renderList(filtered);
+                addMarkers(filtered);
+            }
+        }
+
+        function filterList(query) {
+            const lower = query.toLowerCase();
+            const filtered = spots.filter(s => 
+                s.title.toLowerCase().includes(lower) || 
+                s.city.toLowerCase().includes(lower) ||
+                s.crew.toLowerCase().includes(lower)
+            );
+            renderList(filtered);
+        }
+
+        function toggleFollow(btn) {
+            btn.classList.toggle('active');
+            btn.innerText = btn.classList.contains('active') ? 'Following' : 'Follow';
+        }
+
+        function mockLogin() {
+            alert("In a real app, this would trigger the Google OAuth 2.0 Pop-up.");
+            toggleAuth();
+        }
+    </script>
+</body>
+</html>
