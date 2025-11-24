@@ -210,6 +210,31 @@
             align-items: center;
         }
 
+        /* New Group Headers */
+        .group-header-continent {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .group-header-country {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin-top: 15px;
+            margin-bottom: 10px;
+            padding-left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -546,7 +571,6 @@
         <div id="map"></div>
 
         <div class="listing-container">
-            <div class="section-title">Happening Worldwide</div>
             <div id="loader">Loading spots...</div>
             <div id="feed"></div>
         </div>
@@ -633,7 +657,7 @@
             </div>
 
             <div style="text-align:center; color:#555; font-size:0.8rem; margin-top:40px;">
-                Break Atlas v1.2.0<br>
+                Break Atlas v1.3.0<br>
                 Built for the Culture
             </div>
         </div>
@@ -707,38 +731,9 @@
         let markers = [];
         let currentSpots = [];
         let favorites = JSON.parse(localStorage.getItem('breakAtlas_favorites')) || [];
-        let settings = JSON.parse(localStorage.getItem('breakAtlas_settings')) || {
-            mapStyle: 'dark',
-            accentColor: '#FF5722'
-        };
-
-        // Expanded Mock Data
-        const mockSpots = [
-            // SPOTS
-            { id: 1, title: "Centquatre-Paris (104)", type: "spot", city: "Paris, France", lat: 48.8905, lng: 2.3730, time: "Open Daily: 12:00 - 19:00", crew: "Paris City Breakers", desc: "Iconic indoor spot. Smooth floor, open to all dancers.", img: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800" },
-            { id: 2, title: "Southbank Centre", type: "spot", city: "London, UK", lat: 51.5055, lng: -0.1160, time: "Daily: 10:00 - 22:00", crew: "Soul Mavericks", desc: "Legendary concrete spot under the bridge. Bring kneepads.", img: "https://images.unsplash.com/photo-1517177646641-83fe10f14633?w=800" },
-            { id: 3, title: "Washington Square Park", type: "spot", city: "New York, USA", lat: 40.7308, lng: -73.9973, time: "Weather permitting", crew: "Dynamic Rockers", desc: "Outdoor cyphers near the arch. Classic NYC vibe.", img: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=800" },
-            { id: 4, title: "Gare de Lyon", type: "spot", city: "Paris, France", lat: 48.8443, lng: 2.3744, time: "Evenings & Weekends", crew: "Pokemon Crew", desc: "Underground practice spot in the station corridors.", img: "https://images.unsplash.com/photo-1550950158-d0d960dff51b?w=800" },
-            { id: 5, title: "Yoyogi Park", type: "spot", city: "Tokyo, Japan", lat: 35.6717, lng: 139.6949, time: "Sundays", crew: "Found Nation", desc: "Huge park with rockabilly and breakers near the entrance.", img: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=800" },
-
-            // JAMS
-            { id: 6, title: "IBE Festival 2025", type: "jam", city: "Heerlen, Netherlands", lat: 50.8882, lng: 5.9795, time: "August 14-16, 2025", crew: "The Notorious IBE", desc: "The ultimate Hip Hop dance festival. Cyphers everywhere.", img: "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800" },
-            { id: 7, title: "Red Bull BC One World Final", type: "jam", city: "Rio de Janeiro, Brazil", lat: -22.9068, lng: -43.1729, time: "November 2025", crew: "Red Bull", desc: "The biggest 1on1 battle in the world.", img: "https://images.unsplash.com/photo-1575089976121-8ed7b2a54265?w=800" },
-            { id: 8, title: "Battle of the Year", type: "jam", city: "Osaka, Japan", lat: 34.6937, lng: 135.5023, time: "October 2025", crew: "BOTY", desc: "The world cup of breaking crews.", img: "https://images.unsplash.com/photo-1545959588-8d804619a2f1?w=800" },
-            { id: 9, title: "Outbreak Europe", type: "jam", city: "Banska Bystrica, Slovakia", lat: 48.7363, lng: 19.1462, time: "July 2025", crew: "The Legits", desc: "Rawest vibe in Europe. 8 days of hip hop.", img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800" },
-
-            // CYPHERS
-            { id: 10, title: "Berlin Hbf Tunnel", type: "cypher", city: "Berlin, Germany", lat: 52.5251, lng: 13.3694, time: "Fridays: 20:00 - 23:00", crew: "Berlin Street Rockers", desc: "Underground vibe. Concrete floor.", img: "https://images.unsplash.com/photo-1605125184567-4c27240a660f?w=800" },
-            { id: 11, title: "Venice Beach Boardwalk", type: "cypher", city: "Los Angeles, USA", lat: 33.9850, lng: -118.4695, time: "Weekends", crew: "Cali Breakers", desc: "Sunny vibes, tourists, and raw circles.", img: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800" },
-            { id: 12, title: "Hongdae Playground", type: "cypher", city: "Seoul, Korea", lat: 37.5575, lng: 126.9245, time: "Friday Nights", crew: "Jinjo Crew", desc: "Street performances and open sessions.", img: "https://images.unsplash.com/photo-1617170788809-c1e3609e9929?w=800" }
-        ];
-
-        // --- INIT ---
-        window.onload = () => {
-            applySettings();
-            initMap();
-            window.renderList(mockSpots); // Initial load with mock data
-            window.addMarkers(mockSpots);
+        initMap();
+        window.renderList(mockSpots); // Initial load with mock data
+        window.addMarkers(mockSpots);
         };
 
         // --- CORE FUNCTIONS ---
@@ -763,8 +758,6 @@
             // Update color picker selection
             document.querySelectorAll('.color-dot').forEach(dot => {
                 dot.classList.remove('selected');
-                // Convert rgb/hex for comparison if needed, but simple check here
-                // We'll just rely on the click handler to set visual state for now or simple check
             });
         }
 
@@ -792,7 +785,30 @@
             if (loader) loader.style.display = 'none';
             feed.innerHTML = '';
 
-            data.forEach(spot => {
+            // Sort data: Continent -> Country -> Title
+            const sortedData = [...data].sort((a, b) => {
+                if (a.continent !== b.continent) return a.continent.localeCompare(b.continent);
+                if (a.country !== b.country) return a.country.localeCompare(b.country);
+                return a.title.localeCompare(b.title);
+            });
+
+            let lastContinent = '';
+            let lastCountry = '';
+
+            sortedData.forEach(spot => {
+                // Add Continent Header
+                if (spot.continent !== lastContinent) {
+                    feed.innerHTML += `<div class="group-header-continent">${spot.continent}</div>`;
+                    lastContinent = spot.continent;
+                    lastCountry = ''; // Reset country when continent changes
+                }
+
+                // Add Country Header
+                if (spot.country !== lastCountry) {
+                    feed.innerHTML += `<div class="group-header-country"><span class="material-icons-round" style="font-size:1rem;">public</span> ${spot.country}</div>`;
+                    lastCountry = spot.country;
+                }
+
                 const isFav = favorites.includes(spot.id);
                 const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
                 const card = `
@@ -819,27 +835,20 @@
 
         // --- NAVIGATION & VIEWS ---
         window.switchView = function (viewId) {
-            // Update Menu UI
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            // Find the nav item that triggered this (simple approximation)
             const navItems = document.querySelectorAll('.nav-item');
             if (viewId === 'home') navItems[0].classList.add('active');
             if (viewId === 'crews') navItems[1].classList.add('active');
             if (viewId === 'favorites') navItems[2].classList.add('active');
             if (viewId === 'settings') navItems[3].classList.add('active');
 
-            // Hide all views
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-
-            // Show selected view
             document.getElementById(`view-${viewId}`).classList.add('active');
 
-            // Close nav
             toggleNav();
 
-            // Special logic
             if (viewId === 'favorites') renderFavoritesView();
-            if (viewId === 'home') setTimeout(() => map.invalidateSize(), 300); // Fix map render issue
+            if (viewId === 'home') setTimeout(() => map.invalidateSize(), 300);
         }
 
         // --- FAVORITES LOGIC ---
@@ -853,11 +862,9 @@
             }
             localStorage.setItem('breakAtlas_favorites', JSON.stringify(favorites));
 
-            // If in favorites view, refresh it
             if (document.getElementById('view-favorites').classList.contains('active')) {
                 renderFavoritesView();
             }
-            // If in home view, refresh list to update hearts (optional, but keeps sync)
             if (document.getElementById('view-home').classList.contains('active')) {
                 window.renderList(currentSpots);
             }
@@ -880,6 +887,10 @@
                 return;
             }
 
+            // Reuse the render logic without headers for favorites, or keep headers?
+            // For simplicity in favorites, we might just list them, but let's keep it simple flat list for now or reuse renderList logic if we wanted headers.
+            // Let's stick to simple cards for Favorites to avoid clutter.
+
             favSpots.forEach(spot => {
                 const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
                 const card = `
@@ -892,7 +903,7 @@
                             <span class="card-tag ${tagClass}">${spot.type}</span>
                             <div class="card-title">${spot.title}</div>
                             <div class="card-meta">
-                                <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}
+                                <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}, ${spot.country}
                             </div>
                         </div>
                     </div>
@@ -906,8 +917,8 @@
             settings.mapStyle = settings.mapStyle === 'dark' ? 'light' : 'dark';
             localStorage.setItem('breakAtlas_settings', JSON.stringify(settings));
             applySettings();
-            initMap(); // Re-init to change tiles
-            window.addMarkers(currentSpots); // Re-add markers
+            initMap();
+            window.addMarkers(currentSpots);
         }
 
         window.setAccentColor = function (color) {
@@ -930,13 +941,12 @@
             document.getElementById('modalTitle').innerText = spot.title;
             document.getElementById('modalType').innerText = spot.type;
             document.getElementById('modalType').className = `card-tag ${spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher')}`;
-            document.getElementById('modalCity').innerText = spot.city;
+            document.getElementById('modalCity').innerText = `${spot.city}, ${spot.country}`;
             document.getElementById('modalTime').innerText = spot.time;
             document.getElementById('modalDesc').innerText = spot.desc;
             document.getElementById('modalCrew').innerText = spot.crew;
             document.getElementById('modalImg').src = spot.img;
 
-            // Update Modal Fav Button
             const favBtn = document.getElementById('modalFavBtn');
             if (favorites.includes(spot.id)) {
                 favBtn.style.color = '#FF4081';
@@ -947,7 +957,6 @@
             }
 
             document.getElementById('detailModal').classList.add('open');
-            // If we are on home view, pan map
             if (document.getElementById('view-home').classList.contains('active')) {
                 map.setView([spot.lat, spot.lng], 13);
             }
@@ -955,7 +964,6 @@
 
         window.toggleModalFavorite = function () {
             if (!currentModalSpot) return;
-            // Toggle logic
             if (favorites.includes(currentModalSpot.id)) {
                 favorites = favorites.filter(id => id !== currentModalSpot.id);
             } else {
@@ -963,7 +971,6 @@
             }
             localStorage.setItem('breakAtlas_favorites', JSON.stringify(favorites));
 
-            // Update UI
             const favBtn = document.getElementById('modalFavBtn');
             if (favorites.includes(currentModalSpot.id)) {
                 favBtn.style.color = '#FF4081';
@@ -973,7 +980,6 @@
                 favBtn.innerText = 'favorite_border';
             }
 
-            // Refresh lists
             if (document.getElementById('view-home').classList.contains('active')) window.renderList(currentSpots);
             if (document.getElementById('view-favorites').classList.contains('active')) renderFavoritesView();
         }
@@ -997,7 +1003,7 @@
 
         function filterList(query) {
             const lower = query.toLowerCase();
-            const filtered = mockSpots.filter(s => s.title.toLowerCase().includes(lower) || s.city.toLowerCase().includes(lower) || s.crew.toLowerCase().includes(lower));
+            const filtered = mockSpots.filter(s => s.title.toLowerCase().includes(lower) || s.city.toLowerCase().includes(lower) || s.country.toLowerCase().includes(lower) || s.crew.toLowerCase().includes(lower));
             window.renderList(filtered);
         }
 
