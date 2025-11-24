@@ -6,9 +6,9 @@ import { getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc, query
 // Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyBeet8eefoHisNGuHheICPm0HfJpGCjY60",
-    authDomain: "break-atlas-app.firebaseapp.com",
-    projectId: "break-atlas-app",
-    storageBucket: "break-atlas-app.appspot.com",
+    authDomain: "break-atlas.firebaseapp.com",
+    projectId: "break-atlas",
+    storageBucket: "break-atlas.appspot.com",
     messagingSenderId: "YOUR_SENDER_ID",
     appId: "YOUR_APP_ID"
 };
