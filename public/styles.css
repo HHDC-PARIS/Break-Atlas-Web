@@ -379,18 +379,6 @@ header {
 
 .chip.active {
     background: var(--primary);
-    color: white;
-    font-weight: 700;
-    border-color: var(--primary);
-}
-
-.listing-container {
-    padding: 10px 20px 100px 20px;
-}
-
-.section-title {
-    margin-bottom: 15px;
-    font-size: 1.2rem;
     font-weight: 700;
 }
 
