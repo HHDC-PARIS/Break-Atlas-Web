@@ -200,7 +200,7 @@ header {
     background: var(--primary);
     color: white;
     font-weight: 700;
-   border-color: var(--primary);
+    border-color: var(--primary);
 }
 
 .listing-container {
@@ -428,7 +428,7 @@ header {
 }
 
 .btn-primary:hover {
-   opacity: 0.9;
+    opacity: 0.9;
 }
 
 .btn-google {
@@ -491,4 +491,47 @@ header {
 
 .location-picker-btn:hover {
     border-color: var(--primary);
+}
+
+/* Profile View Fixes */
+#view-profile .listing-container {
+    padding-top: 80px;
+    /* Add top padding to prevent avatar being cut by header */
+}
+
+#view-profile .listing-container>div {
+    padding-top: 20px;
+    /* Additional padding for avatar breathing room */
+}
+
+/* Enhanced Rounded Corners for all popup/modal elements */
+.modal-content {
+    border-radius: 28px !important;
+    /* Extra rounded for premium feel */
+}
+
+.modal-header-img {
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+}
+
+/* Ensure all form elements have consistent rounded corners */
+.form-input,
+.form-select,
+.form-textarea {
+    border-radius: 12px;
+}
+
+.btn-primary {
+    border-radius: 16px;
+}
+
+/* Cards extra rounded */
+.card {
+    border-radius: 20px;
+}
+
+/* Settings buttons */
+button {
+    border-radius: 12px;
 }
