@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Break Atlas | Worldwide Breaking Spot & Jam Locator</title>
-    
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #FF5722; /* Energetic Orange */
+            --primary: #FF5722;
+            /* Default: Energetic Orange */
             --dark: #121212;
             --card-bg: #1E1E1E;
             --text: #E0E0E0;
@@ -19,169 +21,625 @@
             --map-height: 40vh;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--dark); color: var(--text); overflow-x: hidden; }
-        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
         /* --- HEADER --- */
         header {
-            position: fixed; top: 0; width: 100%; height: 60px;
-            background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; z-index: 1000; border-bottom: 1px solid #333;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            border-bottom: 1px solid #333;
         }
-        .brand { font-weight: 900; font-size: 1.2rem; letter-spacing: -0.5px; }
-        .brand span { color: var(--primary); }
-        .icon-btn { background: none; border: none; color: white; cursor: pointer; }
+
+        .brand {
+            font-weight: 900;
+            font-size: 1.2rem;
+            letter-spacing: -0.5px;
+        }
+
+        .brand span {
+            color: var(--primary);
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
 
         /* --- NAVIGATION (Hamburger) --- */
         .nav-overlay {
-            position: fixed; top: 0; left: -100%; width: 80%; height: 100vh;
-            background: var(--card-bg); z-index: 1100; transition: 0.3s ease;
-            padding: 80px 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 80%;
+            height: 100vh;
+            background: var(--card-bg);
+            z-index: 1100;
+            transition: 0.3s ease;
+            padding: 80px 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
         }
-        .nav-overlay.active { left: 0; }
-        .nav-item { display: block; font-size: 1.5rem; margin-bottom: 20px; font-weight: 700; color: var(--text); text-decoration: none; }
-        .nav-item:hover { color: var(--primary); }
-        .close-nav { position: absolute; top: 20px; right: 20px; }
-        .user-status { margin-top: 50px; padding-top: 20px; border-top: 1px solid #333; color: #666; font-size: 0.8rem; }
+
+        .nav-overlay.active {
+            left: 0;
+        }
+
+        .nav-item {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .close-nav {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .user-status {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* --- VIEWS --- */
+        .view-section {
+            display: none;
+            padding-top: 60px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         /* --- SEARCH BAR --- */
-        .search-container { padding: 80px 20px 10px 20px; }
-        .search-input {
-            width: 100%; padding: 12px 40px 12px 15px;
-            border-radius: 8px; border: 1px solid #333;
-            background: var(--card-bg); color: white; outline: none;
+        .search-container {
+            padding: 20px 20px 10px 20px;
         }
-        .search-wrapper { position: relative; }
-        .search-icon-abs { position: absolute; right: 10px; top: 10px; color: var(--text-sub); }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: var(--card-bg);
+            color: white;
+            outline: none;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon-abs {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            color: var(--text-sub);
+        }
 
         /* --- MAP --- */
-        #map { height: var(--map-height); width: 100%; z-index: 1; }
+        #map {
+            height: var(--map-height);
+            width: 100%;
+            z-index: 1;
+        }
 
         /* --- FILTERS --- */
-        .filters { display: flex; overflow-x: auto; padding: 15px 20px; gap: 10px; scrollbar-width: none; }
-        .chip { 
-            padding: 8px 16px; background: #333; border-radius: 20px; 
-            font-size: 0.85rem; white-space: nowrap; cursor: pointer; transition: 0.2s;
+        .filters {
+            display: flex;
+            overflow-x: auto;
+            padding: 15px 20px;
+            gap: 10px;
+            scrollbar-width: none;
         }
-        .chip.active { background: var(--primary); color: white; font-weight: 700; }
+
+        .chip {
+            padding: 8px 16px;
+            background: #333;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+        }
 
         /* --- LISTINGS --- */
-        .listing-container { padding: 10px 20px 80px 20px; }
-        .section-title { margin-bottom: 15px; font-size: 1.1rem; font-weight: 700; }
-        
+        .listing-container {
+            padding: 10px 20px;
+        }
+
+        .section-title {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .card {
-            background: var(--card-bg); border-radius: 12px; overflow: hidden;
-            margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: transform 0.2s; cursor: pointer;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+            cursor: pointer;
+            position: relative;
         }
-        .card:active { transform: scale(0.98); }
-        .card-img { height: 150px; width: 100%; object-fit: cover; background-color: #333; }
-        .card-body { padding: 15px; }
-        .card-tag { 
-            display: inline-block; padding: 4px 8px; border-radius: 4px; 
-            font-size: 0.7rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase;
+
+        .card:active {
+            transform: scale(0.98);
         }
-        .tag-spot { background: #2196F3; }
-        .tag-jam { background: #E91E63; }
-        .tag-cypher { background: #FFC107; color: black; }
-        
-        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
-        .card-meta { font-size: 0.85rem; color: var(--text-sub); display: flex; align-items: center; gap: 5px; }
-        
+
+        .card-img {
+            height: 150px;
+            width: 100%;
+            object-fit: cover;
+            background-color: #333;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .card-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .tag-spot {
+            background: #2196F3;
+        }
+
+        .tag-jam {
+            background: #E91E63;
+        }
+
+        .tag-cypher {
+            background: #FFC107;
+            color: black;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .card-fav-btn.active {
+            color: #FF4081;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* --- SETTINGS & CREWS --- */
+        .settings-group {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .settings-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            font-weight: 500;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+        }
+
+        .color-dot {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-dot.selected {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .crew-list-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .crew-list-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #333;
+            object-fit: cover;
+        }
+
         /* --- FAB (Add Button) --- */
         .fab {
-            position: fixed; bottom: 20px; right: 20px;
-            width: 56px; height: 56px; border-radius: 50%;
-            background: var(--primary); color: white;
-            display: flex; align-items: center; justify-content: center;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             box-shadow: 0 4px 12px rgba(255, 87, 34, 0.4);
-            border: none; cursor: pointer; z-index: 900;
+            border: none;
+            cursor: pointer;
+            z-index: 900;
         }
 
         /* --- DETAIL MODAL --- */
         .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 2000;
-            display: flex; justify-content: center; align-items: flex-end;
-            visibility: hidden; opacity: 0; transition: 0.3s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.3s;
         }
-        .modal.open { visibility: visible; opacity: 1; }
+
+        .modal.open {
+            visibility: visible;
+            opacity: 1;
+        }
+
         .modal-content {
-            background: var(--dark); width: 100%; max-width: 600px; height: 90vh;
-            border-radius: 20px 20px 0 0; padding: 0; overflow-y: auto; position: relative;
+            background: var(--dark);
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            border-radius: 20px 20px 0 0;
+            padding: 0;
+            overflow-y: auto;
+            position: relative;
         }
-        .modal-header-img { width: 100%; height: 250px; object-fit: cover; }
-        .modal-body { padding: 25px; }
+
+        .modal-header-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
         .close-modal {
-            position: absolute; top: 15px; right: 15px;
-            background: rgba(0,0,0,0.5); border-radius: 50%; padding: 5px;
-            color: white; cursor: pointer;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            padding: 5px;
+            color: white;
+            cursor: pointer;
         }
+
         .btn-primary {
-            width: 100%; background: var(--primary); border: none; padding: 15px;
-            color: white; font-weight: 700; border-radius: 8px; margin-top: 20px; cursor: pointer;
+            width: 100%;
+            background: var(--primary);
+            border: none;
+            padding: 15px;
+            color: white;
+            font-weight: 700;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
         }
+
         .btn-google {
-            background: white; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: white;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         /* --- SOCIAL PROFILE ELEMENTS --- */
-        .crew-pill { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px; background: #252525; border-radius: 8px; }
-        .crew-avatar { width: 30px; height: 30px; border-radius: 50%; background: #555; }
-        .btn-follow { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; margin-left: auto; cursor: pointer; }
-        .btn-follow.active { background: var(--primary); color: white; }
+        .crew-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #252525;
+            border-radius: 8px;
+        }
+
+        .crew-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #555;
+        }
+
+        .btn-follow {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: auto;
+            cursor: pointer;
+        }
+
+        .btn-follow.active {
+            background: var(--primary);
+            color: white;
+        }
 
         /* Loader */
-        #loader { text-align: center; padding: 20px; color: var(--text-sub); display: none; }
+        #loader {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-sub);
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-sub);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
     </style>
 </head>
+
 <body>
 
     <header>
         <button class="icon-btn" onclick="toggleNav()"><span class="material-icons-round">menu</span></button>
         <div class="brand">BREAK <span>ATLAS</span></div>
-        <button class="icon-btn" onclick="toggleAuth()"><span class="material-icons-round">account_circle</span></button>
+        <button class="icon-btn" onclick="toggleAuth()"><span
+                class="material-icons-round">account_circle</span></button>
     </header>
 
+    <!-- NAVIGATION MENU -->
     <div class="nav-overlay" id="sideNav">
-        <button class="icon-btn close-nav" onclick="toggleNav()"><span class="material-icons-round">close</span></button>
+        <button class="icon-btn close-nav" onclick="toggleNav()"><span
+                class="material-icons-round">close</span></button>
         <div style="margin-bottom: 30px; opacity: 0.5; font-size: 0.9rem;">MENU</div>
-        <a href="#" class="nav-item">Home</a>
-        <a href="#" class="nav-item">My Crews</a>
-        <a href="#" class="nav-item">Favorites</a>
-        <a href="#" class="nav-item">Settings</a>
+        <div class="nav-item active" onclick="switchView('home')">Home</div>
+        <div class="nav-item" onclick="switchView('crews')">My Crews</div>
+        <div class="nav-item" onclick="switchView('favorites')">Favorites</div>
+        <div class="nav-item" onclick="switchView('settings')">Settings</div>
         <div class="user-status" id="userStatus">
             Not logged in
         </div>
     </div>
 
-    <div class="search-container">
-        <div class="search-wrapper">
-            <input type="text" class="search-input" placeholder="Search city, jam, or crew..." onkeyup="filterList(this.value)">
-            <span class="material-icons-round search-icon-abs">search</span>
+    <!-- VIEW: HOME -->
+    <div id="view-home" class="view-section active">
+        <div class="search-container">
+            <div class="search-wrapper">
+                <input type="text" class="search-input" placeholder="Search city, jam, or crew..."
+                    onkeyup="filterList(this.value)">
+                <span class="material-icons-round search-icon-abs">search</span>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="chip active" onclick="filterType('all', this)">All</div>
+            <div class="chip" onclick="filterType('spot', this)">Training Spots</div>
+            <div class="chip" onclick="filterType('jam', this)">Jams / Battles</div>
+            <div class="chip" onclick="filterType('cypher', this)">Open Cyphers</div>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="listing-container">
+            <div class="section-title">Happening Worldwide</div>
+            <div id="loader">Loading spots...</div>
+            <div id="feed"></div>
+        </div>
+
+        <button class="fab" onclick="handleAddClick()">
+            <span class="material-icons-round">add</span>
+        </button>
+    </div>
+
+    <!-- VIEW: MY CREWS -->
+    <div id="view-crews" class="view-section">
+        <div class="listing-container">
+            <div class="section-title">
+                My Crews
+                <button onclick="alert('Create Crew feature coming soon!')"
+                    style="background:none; border:none; color:var(--primary); font-weight:700; cursor:pointer;">+
+                    Create</button>
+            </div>
+            <div id="crews-list">
+                <!-- Mock Crews -->
+                <div class="crew-list-item">
+                    <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200"
+                        class="crew-list-avatar">
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.1rem;">Paris City Breakers</div>
+                        <div style="color: var(--text-sub); font-size: 0.85rem;">Paris, France • 12 Members</div>
+                    </div>
+                    <button class="btn-follow active" onclick="toggleFollow(this)">Member</button>
+                </div>
+                <div class="crew-list-item">
+                    <img src="https://images.unsplash.com/photo-1514525253440-b39345208668?w=200"
+                        class="crew-list-avatar">
+                    <div>
+                        <div style="font-weight: 700; font-size: 1.1rem;">Floor Wars Squad</div>
+                        <div style="color: var(--text-sub); font-size: 0.85rem;">Copenhagen, DK • 8 Members</div>
+                    </div>
+                    <button class="btn-follow" onclick="toggleFollow(this)">Request</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="filters">
-        <div class="chip active" onclick="filterType('all', this)">All</div>
-        <div class="chip" onclick="filterType('spot', this)">Training Spots</div>
-        <div class="chip" onclick="filterType('jam', this)">Jams / Battles</div>
-        <div class="chip" onclick="filterType('cypher', this)">Open Cyphers</div>
+    <!-- VIEW: FAVORITES -->
+    <div id="view-favorites" class="view-section">
+        <div class="listing-container">
+            <div class="section-title">Saved Spots & Jams</div>
+            <div id="favorites-feed"></div>
+        </div>
     </div>
 
-    <div id="map"></div>
+    <!-- VIEW: SETTINGS -->
+    <div id="view-settings" class="view-section">
+        <div class="listing-container">
+            <div class="section-title">App Settings</div>
 
-    <div class="listing-container">
-        <div class="section-title">Happening in Europe</div>
-        <div id="loader">Loading spots...</div>
-        <div id="feed"></div>
+            <div class="settings-group">
+                <div class="settings-item">
+                    <div class="settings-label">Map Style</div>
+                    <button onclick="toggleMapStyle()" id="btn-map-style"
+                        style="background:#333; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Dark
+                        Mode</button>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-item">
+                    <div class="settings-label">Accent Color</div>
+                    <div class="color-picker">
+                        <div class="color-dot" style="background: #FF5722;" onclick="setAccentColor('#FF5722')"></div>
+                        <div class="color-dot" style="background: #2196F3;" onclick="setAccentColor('#2196F3')"></div>
+                        <div class="color-dot" style="background: #00E676;" onclick="setAccentColor('#00E676')"></div>
+                        <div class="color-dot" style="background: #E91E63;" onclick="setAccentColor('#E91E63')"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <div class="settings-item">
+                    <div class="settings-label">Data & Storage</div>
+                    <button onclick="clearData()"
+                        style="background:none; border:1px solid #ff4444; color:#ff4444; padding:8px 16px; border-radius:6px; cursor:pointer;">Reset
+                        App</button>
+                </div>
+            </div>
+
+            <div style="text-align:center; color:#555; font-size:0.8rem; margin-top:40px;">
+                Break Atlas v1.2.0<br>
+                Built for the Culture
+            </div>
+        </div>
     </div>
 
-    <button class="fab" onclick="handleAddClick()">
-        <span class="material-icons-round">add</span>
-    </button>
-
+    <!-- MODALS -->
     <div class="modal" id="detailModal">
         <div class="modal-content">
             <div class="close-modal" onclick="closeModal()">
@@ -189,10 +647,16 @@
             </div>
             <img src="" id="modalImg" class="modal-header-img">
             <div class="modal-body">
-                <span class="card-tag" id="modalType"></span>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <span class="card-tag" id="modalType"></span>
+                    <div id="modalFavBtn" class="material-icons-round"
+                        style="font-size:2rem; color:#555; cursor:pointer;" onclick="toggleModalFavorite()">favorite
+                    </div>
+                </div>
                 <h2 id="modalTitle" style="margin: 10px 0;"></h2>
                 <p id="modalLoc" style="color: var(--primary); display:flex; align-items:center; gap:5px;">
-                    <span class="material-icons-round" style="font-size:1rem">location_on</span> <span id="modalCity"></span>
+                    <span class="material-icons-round" style="font-size:1rem">location_on</span> <span
+                        id="modalCity"></span>
                 </p>
                 <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
                 <h3>Schedule</h3>
@@ -224,7 +688,8 @@
             </div>
             <div class="modal-body" style="text-align: center;">
                 <h2>Join the Cypher</h2>
-                <p style="color: #999; margin-bottom: 30px;">Connect with breakers, save spots, and register for jams.</p>
+                <p style="color: #999; margin-bottom: 30px;">Connect with breakers, save spots, and register for jams.
+                </p>
                 <button class="btn-primary btn-google" onclick="triggerGoogleLogin()">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
                     Continue with Google
@@ -237,34 +702,73 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Global variables accessed by both scripts
+        // --- DATA & STATE ---
         let map;
         let markers = [];
-        let currentSpots = []; // Holds the current list of spots (Mock or DB)
-        
-        // Mock Data (Fallback if DB is empty)
-        const mockSpots = [
-            { id: 1, title: "Centquatre-Paris (104)", type: "spot", city: "Paris, France", lat: 48.8905, lng: 2.3730, time: "Open Daily: 12:00 - 19:00", crew: "Paris City Breakers", desc: "Iconic indoor spot. Smooth floor.", img: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800" },
-            { id: 2, title: "IBE Festival 2025", type: "jam", city: "Heerlen, Netherlands", lat: 50.8882, lng: 5.9795, time: "August 14-16, 2025", crew: "The Notorious IBE", desc: "The ultimate Hip Hop dance festival.", img: "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800" },
-            { id: 3, title: "Berlin Hbf Tunnel", type: "cypher", city: "Berlin, Germany", lat: 52.5251, lng: 13.3694, time: "Fridays: 20:00 - 23:00", crew: "Berlin Street Rockers", desc: "Underground vibe. Concrete floor.", img: "https://images.unsplash.com/photo-1605125184567-4c27240a660f?w=800" }
-        ];
-
-        window.onload = () => {
-            initMap();
-            // Note: Data loading is handled by the Firebase script module below
+        let currentSpots = [];
+        let favorites = JSON.parse(localStorage.getItem('breakAtlas_favorites')) || [];
+        let settings = JSON.parse(localStorage.getItem('breakAtlas_settings')) || {
+            mapStyle: 'dark',
+            accentColor: '#FF5722'
         };
 
+        // Expanded Mock Data
+        const mockSpots = [
+            // SPOTS
+            { id: 1, title: "Centquatre-Paris (104)", type: "spot", city: "Paris, France", lat: 48.8905, lng: 2.3730, time: "Open Daily: 12:00 - 19:00", crew: "Paris City Breakers", desc: "Iconic indoor spot. Smooth floor, open to all dancers.", img: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800" },
+            { id: 2, title: "Southbank Centre", type: "spot", city: "London, UK", lat: 51.5055, lng: -0.1160, time: "Daily: 10:00 - 22:00", crew: "Soul Mavericks", desc: "Legendary concrete spot under the bridge. Bring kneepads.", img: "https://images.unsplash.com/photo-1517177646641-83fe10f14633?w=800" },
+            { id: 3, title: "Washington Square Park", type: "spot", city: "New York, USA", lat: 40.7308, lng: -73.9973, time: "Weather permitting", crew: "Dynamic Rockers", desc: "Outdoor cyphers near the arch. Classic NYC vibe.", img: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=800" },
+            { id: 4, title: "Gare de Lyon", type: "spot", city: "Paris, France", lat: 48.8443, lng: 2.3744, time: "Evenings & Weekends", crew: "Pokemon Crew", desc: "Underground practice spot in the station corridors.", img: "https://images.unsplash.com/photo-1550950158-d0d960dff51b?w=800" },
+            { id: 5, title: "Yoyogi Park", type: "spot", city: "Tokyo, Japan", lat: 35.6717, lng: 139.6949, time: "Sundays", crew: "Found Nation", desc: "Huge park with rockabilly and breakers near the entrance.", img: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=800" },
+
+            // JAMS
+            { id: 6, title: "IBE Festival 2025", type: "jam", city: "Heerlen, Netherlands", lat: 50.8882, lng: 5.9795, time: "August 14-16, 2025", crew: "The Notorious IBE", desc: "The ultimate Hip Hop dance festival. Cyphers everywhere.", img: "https://images.unsplash.com/photo-1508700929628-666bc8bd84ea?w=800" },
+            { id: 7, title: "Red Bull BC One World Final", type: "jam", city: "Rio de Janeiro, Brazil", lat: -22.9068, lng: -43.1729, time: "November 2025", crew: "Red Bull", desc: "The biggest 1on1 battle in the world.", img: "https://images.unsplash.com/photo-1575089976121-8ed7b2a54265?w=800" },
+            { id: 8, title: "Battle of the Year", type: "jam", city: "Osaka, Japan", lat: 34.6937, lng: 135.5023, time: "October 2025", crew: "BOTY", desc: "The world cup of breaking crews.", img: "https://images.unsplash.com/photo-1545959588-8d804619a2f1?w=800" },
+            { id: 9, title: "Outbreak Europe", type: "jam", city: "Banska Bystrica, Slovakia", lat: 48.7363, lng: 19.1462, time: "July 2025", crew: "The Legits", desc: "Rawest vibe in Europe. 8 days of hip hop.", img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800" },
+
+            // CYPHERS
+            { id: 10, title: "Berlin Hbf Tunnel", type: "cypher", city: "Berlin, Germany", lat: 52.5251, lng: 13.3694, time: "Fridays: 20:00 - 23:00", crew: "Berlin Street Rockers", desc: "Underground vibe. Concrete floor.", img: "https://images.unsplash.com/photo-1605125184567-4c27240a660f?w=800" },
+            { id: 11, title: "Venice Beach Boardwalk", type: "cypher", city: "Los Angeles, USA", lat: 33.9850, lng: -118.4695, time: "Weekends", crew: "Cali Breakers", desc: "Sunny vibes, tourists, and raw circles.", img: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800" },
+            { id: 12, title: "Hongdae Playground", type: "cypher", city: "Seoul, Korea", lat: 37.5575, lng: 126.9245, time: "Friday Nights", crew: "Jinjo Crew", desc: "Street performances and open sessions.", img: "https://images.unsplash.com/photo-1617170788809-c1e3609e9929?w=800" }
+        ];
+
+        // --- INIT ---
+        window.onload = () => {
+            applySettings();
+            initMap();
+            window.renderList(mockSpots); // Initial load with mock data
+            window.addMarkers(mockSpots);
+        };
+
+        // --- CORE FUNCTIONS ---
         function initMap() {
-            map = L.map('map').setView([49.5, 12.5], 4);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            if (map) map.remove();
+            map = L.map('map').setView([20, 0], 2); // World view
+
+            const darkTiles = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            const lightTiles = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+            L.tileLayer(settings.mapStyle === 'dark' ? darkTiles : lightTiles, {
                 attribution: '&copy; OpenStreetMap &copy; CARTO',
                 subdomains: 'abcd',
                 maxZoom: 19
             }).addTo(map);
         }
 
-        // Global function to update the map markers
-        window.addMarkers = function(data) {
+        function applySettings() {
+            document.documentElement.style.setProperty('--primary', settings.accentColor);
+            document.getElementById('btn-map-style').innerText = settings.mapStyle === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+
+            // Update color picker selection
+            document.querySelectorAll('.color-dot').forEach(dot => {
+                dot.classList.remove('selected');
+                // Convert rgb/hex for comparison if needed, but simple check here
+                // We'll just rely on the click handler to set visual state for now or simple check
+            });
+        }
+
+        window.addMarkers = function (data) {
             markers.forEach(m => map.removeLayer(m));
             markers = [];
             data.forEach(spot => {
@@ -275,25 +779,28 @@
                     iconSize: [12, 12],
                     iconAnchor: [6, 6]
                 });
-                const marker = L.marker([spot.lat, spot.lng], {icon: icon}).addTo(map);
+                const marker = L.marker([spot.lat, spot.lng], { icon: icon }).addTo(map);
                 marker.on('click', () => openModal(spot));
                 markers.push(marker);
             });
         }
 
-        // Global function to render the list
-        window.renderList = function(data) {
-            currentSpots = data; // store for filtering
+        window.renderList = function (data) {
+            currentSpots = data;
             const feed = document.getElementById('feed');
             const loader = document.getElementById('loader');
-            loader.style.display = 'none'; // Hide loader
+            if (loader) loader.style.display = 'none';
             feed.innerHTML = '';
 
             data.forEach(spot => {
+                const isFav = favorites.includes(spot.id);
                 const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
                 const card = `
                     <div class="card" onclick='openModal(${JSON.stringify(spot)})'>
                         <img src="${spot.img}" class="card-img">
+                        <div class="card-fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${spot.id}, this)">
+                            <span class="material-icons-round">favorite</span>
+                        </div>
                         <div class="card-body">
                             <span class="card-tag ${tagClass}">${spot.type}</span>
                             <div class="card-title">${spot.title}</div>
@@ -310,8 +817,116 @@
             });
         }
 
-        // UI Interactions
+        // --- NAVIGATION & VIEWS ---
+        window.switchView = function (viewId) {
+            // Update Menu UI
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // Find the nav item that triggered this (simple approximation)
+            const navItems = document.querySelectorAll('.nav-item');
+            if (viewId === 'home') navItems[0].classList.add('active');
+            if (viewId === 'crews') navItems[1].classList.add('active');
+            if (viewId === 'favorites') navItems[2].classList.add('active');
+            if (viewId === 'settings') navItems[3].classList.add('active');
+
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+
+            // Show selected view
+            document.getElementById(`view-${viewId}`).classList.add('active');
+
+            // Close nav
+            toggleNav();
+
+            // Special logic
+            if (viewId === 'favorites') renderFavoritesView();
+            if (viewId === 'home') setTimeout(() => map.invalidateSize(), 300); // Fix map render issue
+        }
+
+        // --- FAVORITES LOGIC ---
+        window.toggleFavorite = function (id, btnElement) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(favId => favId !== id);
+                if (btnElement) btnElement.classList.remove('active');
+            } else {
+                favorites.push(id);
+                if (btnElement) btnElement.classList.add('active');
+            }
+            localStorage.setItem('breakAtlas_favorites', JSON.stringify(favorites));
+
+            // If in favorites view, refresh it
+            if (document.getElementById('view-favorites').classList.contains('active')) {
+                renderFavoritesView();
+            }
+            // If in home view, refresh list to update hearts (optional, but keeps sync)
+            if (document.getElementById('view-home').classList.contains('active')) {
+                window.renderList(currentSpots);
+            }
+        }
+
+        function renderFavoritesView() {
+            const container = document.getElementById('favorites-feed');
+            container.innerHTML = '';
+
+            const favSpots = mockSpots.filter(s => favorites.includes(s.id));
+
+            if (favSpots.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-icons-round empty-icon">favorite_border</span>
+                        <h3>No Favorites Yet</h3>
+                        <p>Heart spots to save them here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            favSpots.forEach(spot => {
+                const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
+                const card = `
+                    <div class="card" onclick='openModal(${JSON.stringify(spot)})'>
+                        <img src="${spot.img}" class="card-img">
+                        <div class="card-fav-btn active" onclick="event.stopPropagation(); toggleFavorite(${spot.id}, this)">
+                            <span class="material-icons-round">favorite</span>
+                        </div>
+                        <div class="card-body">
+                            <span class="card-tag ${tagClass}">${spot.type}</span>
+                            <div class="card-title">${spot.title}</div>
+                            <div class="card-meta">
+                                <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        // --- SETTINGS LOGIC ---
+        window.toggleMapStyle = function () {
+            settings.mapStyle = settings.mapStyle === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('breakAtlas_settings', JSON.stringify(settings));
+            applySettings();
+            initMap(); // Re-init to change tiles
+            window.addMarkers(currentSpots); // Re-add markers
+        }
+
+        window.setAccentColor = function (color) {
+            settings.accentColor = color;
+            localStorage.setItem('breakAtlas_settings', JSON.stringify(settings));
+            applySettings();
+        }
+
+        window.clearData = function () {
+            if (confirm('Are you sure you want to reset all favorites and settings?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // --- MODAL LOGIC ---
+        let currentModalSpot = null;
         function openModal(spot) {
+            currentModalSpot = spot;
             document.getElementById('modalTitle').innerText = spot.title;
             document.getElementById('modalType').innerText = spot.type;
             document.getElementById('modalType').className = `card-tag ${spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher')}`;
@@ -320,22 +935,61 @@
             document.getElementById('modalDesc').innerText = spot.desc;
             document.getElementById('modalCrew').innerText = spot.crew;
             document.getElementById('modalImg').src = spot.img;
+
+            // Update Modal Fav Button
+            const favBtn = document.getElementById('modalFavBtn');
+            if (favorites.includes(spot.id)) {
+                favBtn.style.color = '#FF4081';
+                favBtn.innerText = 'favorite';
+            } else {
+                favBtn.style.color = '#555';
+                favBtn.innerText = 'favorite_border';
+            }
+
             document.getElementById('detailModal').classList.add('open');
-            map.setView([spot.lat, spot.lng], 13);
+            // If we are on home view, pan map
+            if (document.getElementById('view-home').classList.contains('active')) {
+                map.setView([spot.lat, spot.lng], 13);
+            }
+        }
+
+        window.toggleModalFavorite = function () {
+            if (!currentModalSpot) return;
+            // Toggle logic
+            if (favorites.includes(currentModalSpot.id)) {
+                favorites = favorites.filter(id => id !== currentModalSpot.id);
+            } else {
+                favorites.push(currentModalSpot.id);
+            }
+            localStorage.setItem('breakAtlas_favorites', JSON.stringify(favorites));
+
+            // Update UI
+            const favBtn = document.getElementById('modalFavBtn');
+            if (favorites.includes(currentModalSpot.id)) {
+                favBtn.style.color = '#FF4081';
+                favBtn.innerText = 'favorite';
+            } else {
+                favBtn.style.color = '#555';
+                favBtn.innerText = 'favorite_border';
+            }
+
+            // Refresh lists
+            if (document.getElementById('view-home').classList.contains('active')) window.renderList(currentSpots);
+            if (document.getElementById('view-favorites').classList.contains('active')) renderFavoritesView();
         }
 
         function closeModal() { document.getElementById('detailModal').classList.remove('open'); }
         function toggleNav() { document.getElementById('sideNav').classList.toggle('active'); }
         function toggleAuth() { document.getElementById('authModal').classList.toggle('open'); }
-        
+
         function filterType(type, el) {
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
-            if(type === 'all') {
-                window.renderList(currentSpots);
-                window.addMarkers(currentSpots);
+            if (type === 'all') {
+                window.renderList(mockSpots);
+                window.addMarkers(mockSpots);
             } else {
-                const filtered = currentSpots.filter(s => s.type === type);
+                const filtered = mockSpots.filter(s => s.type === type);
                 window.renderList(filtered);
                 window.addMarkers(filtered);
             }
@@ -343,11 +997,7 @@
 
         function filterList(query) {
             const lower = query.toLowerCase();
-            const filtered = currentSpots.filter(s => s.title.toLowerCase().includes(lower) || s.city.toLowerCase().includes(lower) || s.crew.toLowerCase().includes(lower));
-            const feed = document.getElementById('feed');
-            feed.innerHTML = ''; // basic redraw
-            filtered.forEach(spot => { /* Simplified redraw for search for brevity */ });
-            // Re-using renderList for clean search:
+            const filtered = mockSpots.filter(s => s.title.toLowerCase().includes(lower) || s.city.toLowerCase().includes(lower) || s.crew.toLowerCase().includes(lower));
             window.renderList(filtered);
         }
 
@@ -356,9 +1006,8 @@
             btn.innerText = btn.classList.contains('active') ? 'Following' : 'Follow';
         }
 
-        // Placeholder for Add Button logic
         function handleAddClick() {
-            if(window.isUserLoggedIn) {
+            if (window.isUserLoggedIn) {
                 alert("This would open the 'Add Spot' form in the full version!");
             } else {
                 toggleAuth();
@@ -372,7 +1021,6 @@
         import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- FIREBASE CONFIGURATION ---
-        // TODO: Replace with your actual config from Firebase Console
         const firebaseConfig = {
             apiKey: "AIzaSyBeet8eefoHisNGuHheICPm0HfJpGCjY60",
             authDomain: "break-atlas-app.firebaseapp.com",
@@ -382,33 +1030,27 @@
             appId: "YOUR_APP_ID"
         };
 
-        // Initialize
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // 1. Handle Login
-        window.triggerGoogleLogin = async function() {
+        window.triggerGoogleLogin = async function () {
             try {
                 const result = await signInWithPopup(auth, provider);
-                console.log("User:", result.user);
-                toggleAuth(); // Close modal
+                toggleAuth();
             } catch (error) {
                 console.error("Login Error:", error);
                 alert("Login Error: " + error.message);
             }
         };
 
-        // 2. Handle Logout
-        window.triggerLogout = function() {
+        window.triggerLogout = function () {
             signOut(auth).then(() => {
                 alert("Logged out");
-                // Refresh to reset state or update UI
             });
         };
 
-        // 3. Auth State Observer
         onAuthStateChanged(auth, (user) => {
             const statusDiv = document.getElementById('userStatus');
             if (user) {
@@ -422,4 +1064,10 @@
                 `;
             } else {
                 window.isUserLoggedIn = false;
-                statusDiv.innerHTML = "Not logged in. <br><a href='
+                statusDiv.innerHTML = "Not logged in. <br><a href='#' onclick='toggleAuth()' style='color:var(--primary)'>Login</a>";
+            }
+        });
+    </script>
+</body>
+
+</html>
