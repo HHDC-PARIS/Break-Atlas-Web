@@ -204,7 +204,7 @@ header {
 }
 
 .listing-container {
-    padding: 10px 20px 100px 20px;
+    padding: 80px 20px 100px 20px;
 }
 
 .section-title {
@@ -297,20 +297,6 @@ header {
     color: white;
 }
 
-.tag-jam {
-    background: #E91E63;
-    color: white;
-}
-
-cursor: pointer;
-padding: 10px;
-border-radius: 8px;
-transition: background-color 0.2s;
-}
-
-.nav-item:hover {
-    background-color: rgba(128, 128, 128, 0.1);
-}
 
 .nav-item.active {
     color: var(--primary);

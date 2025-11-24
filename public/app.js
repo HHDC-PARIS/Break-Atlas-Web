@@ -27,6 +27,17 @@ const mockSpots = [
     { id: 7, title: "Red Bull BC One World Final", type: "jam", continent: "South America", country: "Brazil", city: "Rio de Janeiro", lat: -22.9068, lng: -43.1729, time: "November 2025", crew: "Red Bull", desc: "The biggest 1on1 battle in the world.", img: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800" }
 ];
 
+const mockCrews = [
+    { id: 1, name: "Rock Steady Crew", location: "New York, USA", members: "40+ Members", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Rock_Steady_Crew_1983.jpg/440px-Rock_Steady_Crew_1983.jpg", status: "Legendary" },
+    { id: 2, name: "The Ruggeds", location: "Eindhoven, Netherlands", members: "8 Members", img: "https://yt3.googleusercontent.com/ytc/AIdro_k6q_k6q_k6q_k6q_k6q_k6q_k6q_k6q_k6q_k6q_k6=s900-c-k-c0x00ffffff-no-rj", status: "Active" },
+    { id: 3, name: "Jinjo Crew", location: "Seoul, South Korea", members: "12 Members", img: "https://i.scdn.co/image/ab6761610000e5eb1234567890abcdef123456", status: "Active" },
+    { id: 4, name: "Pokemon Crew", location: "Lyon, France", members: "15 Members", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Pokemon_Crew_2012.jpg/440px-Pokemon_Crew_2012.jpg", status: "Active" },
+    { id: 5, name: "Red Bull BC One All Stars", location: "International", members: "18 Members", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Red_Bull_BC_One_Logo.svg/1200px-Red_Bull_BC_One_Logo.svg.png", status: "Elite" },
+    { id: 6, name: "Vagabonds", location: "Paris, France", members: "10 Members", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Vagabonds_Crew.jpg/440px-Vagabonds_Crew.jpg", status: "Active" },
+    { id: 7, name: "Massive Monkees", location: "Seattle, USA", members: "25 Members", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Massive_Monkees.jpg/440px-Massive_Monkees.jpg", status: "Active" },
+    { id: 8, name: "Flooriorz", location: "Kawasaki, Japan", members: "9 Members", img: "https://i.ytimg.com/vi/1234567890/maxresdefault.jpg", status: "Active" }
+];
+
 // --- INITIALIZATION ---
 window.firestoreSpots = [];
 
@@ -147,7 +158,7 @@ window.renderList = function (data) {
             lastCountry = country;
         }
 
-        const isFav = favorites.includes(spot.id);
+        const isFav = favorites.some(fav => String(fav) === String(spot.id));
         const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
         const imgUrl = spot.img || "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800";
 
@@ -189,7 +200,40 @@ window.switchView = function (viewId) {
     toggleNav();
 
     if (viewId === 'favorites') renderFavoritesView();
+    if (viewId === 'crews') renderCrews();
     if (viewId === 'home') setTimeout(() => map.invalidateSize(), 300);
+}
+
+window.renderCrews = function () {
+    const container = document.getElementById('crews-list');
+    container.innerHTML = '';
+
+    mockCrews.forEach(crew => {
+        // Use a generic breaking image if the specific one fails or for consistency
+        const imgUrl = crew.img.includes('wikimedia') || crew.img.includes('yt3') || crew.img.includes('scdn')
+            ? crew.img
+            : "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800";
+
+        const card = `
+        <div class="card" style="display:flex; align-items:center; padding:15px; cursor:default;">
+            <img src="${imgUrl}" 
+                style="width:60px; height:60px; border-radius:50%; margin-right:15px; object-fit:cover; border: 2px solid var(--primary);">
+            <div style="flex:1;">
+                <div style="font-weight: 700; color: var(--text); font-size: 1.1rem;">${crew.name}</div>
+                <div style="color: var(--text-sub); font-size: 0.85rem; margin-top:4px;">
+                    <span style="margin-right: 10px;">📍 ${crew.location}</span>
+                    <span>👥 ${crew.members}</span>
+                </div>
+            </div>
+            <button class="btn-primary" 
+                style="width:auto; padding:8px 15px; margin:0; font-size:0.8rem; background: transparent; border: 1px solid var(--primary); color: var(--primary);"
+                onclick="alert('Request to join ${crew.name} sent!')">
+                Join
+            </button>
+        </div>
+        `;
+        container.innerHTML += card;
+    });
 }
 
 window.toggleNav = function () {
@@ -212,44 +256,119 @@ window.handleAddClick = function () {
 
 // --- FAVORITES LOGIC ---
 window.toggleFavorite = function (id, btnElement) {
-    if (favorites.includes(id)) {
-        favorites = favorites.filter(favId => favId !== id);
+    // Normalize ID to string for consistent comparison
+    const normalizedId = String(id);
+    const index = favorites.findIndex(fav => String(fav) === normalizedId);
+
+    if (index !== -1) {
+        favorites.splice(index, 1);
         if (btnElement) btnElement.classList.remove('active');
     } else {
+        // Store as the original type (number or string)
         favorites.push(id);
         if (btnElement) btnElement.classList.add('active');
     }
     localStorage.setItem('breakAtlas_favorites', JSON.stringify(favorites));
 
+    // Update favorites view if it's currently active
     if (document.getElementById('view-favorites').classList.contains('active')) {
         renderFavoritesView();
     }
+
+    // Update the card list to reflect new favorite state
+    const allCards = document.querySelectorAll('.card-fav-btn');
+    allCards.forEach(card => {
+        const cardButton = card;
+        // This ensures all cards with the same ID get updated
+        if (cardButton.onclick && cardButton.onclick.toString().includes(`'${normalizedId}'`)) {
+            if (index !== -1) {
+                cardButton.classList.remove('active');
+            } else {
+                cardButton.classList.add('active');
+            }
+        }
+    });
 }
+
+let currentFavFilter = 'all';
 
 function renderFavoritesView() {
     const container = document.getElementById('favorites-feed');
-    container.innerHTML = '';
 
     const allSpots = [...mockSpots, ...currentSpots];
     const uniqueSpots = Array.from(new Map(allSpots.map(item => [item.id, item])).values());
-    const favSpots = uniqueSpots.filter(s => favorites.includes(s.id));
+    let favSpots = uniqueSpots.filter(s => favorites.some(fav => String(fav) === String(s.id)));
 
-    if (favSpots.length === 0) {
-        container.innerHTML = `
+    // Apply filter
+    if (currentFavFilter !== 'all') {
+        favSpots = favSpots.filter(s => s.type === currentFavFilter);
+    }
+
+    // Count by type
+    const allFavSpots = uniqueSpots.filter(s => favorites.some(fav => String(fav) === String(s.id)));
+    const counts = {
+        all: allFavSpots.length,
+        spot: allFavSpots.filter(s => s.type === 'spot').length,
+        jam: allFavSpots.filter(s => s.type === 'jam').length,
+        cypher: allFavSpots.filter(s => s.type === 'cypher').length
+    };
+
+    // Render filter chips
+    const filtersHtml = `
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <span style="color: var(--text); font-weight: 600; font-size: 0.9rem;">Filter:</span>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <div class="chip ${currentFavFilter === 'all' ? 'active' : ''}" onclick="filterFavorites('all')" style="cursor: pointer;">
+                        All (${counts.all})
+                    </div>
+                    <div class="chip ${currentFavFilter === 'spot' ? 'active' : ''}" onclick="filterFavorites('spot')" style="cursor: pointer;">
+                        Spots (${counts.spot})
+                    </div>
+                    <div class="chip ${currentFavFilter === 'jam' ? 'active' : ''}" onclick="filterFavorites('jam')" style="cursor: pointer;">
+                        Jams (${counts.jam})
+                    </div>
+                    <div class="chip ${currentFavFilter === 'cypher' ? 'active' : ''}" onclick="filterFavorites('cypher')" style="cursor: pointer;">
+                        Cyphers (${counts.cypher})
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = filtersHtml;
+
+    if (allFavSpots.length === 0) {
+        container.innerHTML += `
         <div class="empty-state" style="text-align:center; padding:40px; color:var(--text-sub);">
-            <span class="material-icons-round" style="font-size:3rem; margin-bottom:10px;">favorite_border</span>
-            <h3>No Favorites Yet</h3>
-            <p>Heart spots to save them here.</p>
+            <span class="material-icons-round" style="font-size:3rem; margin-bottom:10px; color: var(--primary);">favorite_border</span>
+            <h3 style="color: var(--text); margin: 15px 0 10px 0;">No Favorites Yet</h3>
+            <p style="margin-bottom: 20px;">Start building your collection by hearting spots you want to visit!</p>
+            <button class="btn-primary" onclick="switchView('home')" style="width: auto; padding: 12px 24px;">
+                Explore Spots
+            </button>
         </div>
         `;
         return;
     }
 
+    if (favSpots.length === 0) {
+        container.innerHTML += `
+        <div class="empty-state" style="text-align:center; padding:40px; color:var(--text-sub);">
+            <span class="material-icons-round" style="font-size:2.5rem; margin-bottom:10px;">filter_list_off</span>
+            <h4 style="color: var(--text); margin: 10px 0;">No ${currentFavFilter}s in favorites</h4>
+            <p>Try a different filter or add more spots to your favorites!</p>
+        </div>
+        `;
+        return;
+    }
+
+    const feedContainer = document.createElement('div');
     favSpots.forEach(spot => {
         const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
         const imgUrl = spot.img || "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800";
         const card = `
-        <div class="card" onclick='openModal(${JSON.stringify(spot).replace(/'/g, "&#39;")})'>
+        <div class="card" onclick='openModal(${JSON.stringify(spot).replace(/'/g, "&#39;")}'>
             <img src="${imgUrl}" class="card-img">
             <div class="card-fav-btn active" onclick="event.stopPropagation(); toggleFavorite('${spot.id}', this)">
                 <span class="material-icons-round">favorite</span>
@@ -263,8 +382,14 @@ function renderFavoritesView() {
             </div>
         </div>
         `;
-        container.innerHTML += card;
+        feedContainer.innerHTML += card;
     });
+    container.appendChild(feedContainer);
+}
+
+window.filterFavorites = function (type) {
+    currentFavFilter = type;
+    renderFavoritesView();
 }
 
 // --- MODAL LOGIC ---
