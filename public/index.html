@@ -6,505 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Break Atlas | Worldwide Breaking Spot & Jam Locator</title>
 
+    <!-- External Resources -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            --primary: #FF5722;
-            --bg: #121212;
-            --card-bg: #1E1E1E;
-            --text: #E0E0E0;
-            --text-sub: #A0A0A0;
-            --border: rgba(255, 255, 255, 0.1);
-            --nav-bg: rgba(30, 30, 30, 0.95);
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
+    <!-- Our CSS -->
+    <link rel="stylesheet" href="styles.css">
 
-        [data-theme="light"] {
-            --bg: #F5F5F5;
-            --card-bg: #FFFFFF;
-            --text: #212121;
-            --text-sub: #757575;
-            --border: rgba(0, 0, 0, 0.1);
-            --nav-bg: rgba(255, 255, 255, 0.95);
-            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 60px;
-            background: var(--nav-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 1000;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo {
-            font-weight: 900;
-            font-size: 1.2rem;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            color: var(--text);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: background-color 0.2s;
-        }
-
-        .icon-btn:hover {
-            background-color: rgba(128, 128, 128, 0.2);
-        }
-
-        .nav-overlay {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: 80%;
-            max-width: 300px;
-            height: 100vh;
-            background: var(--nav-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 1100;
-            transition: 0.3s ease;
-            padding: 80px 20px 20px 20px;
-            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
-            border-right: 1px solid var(--border);
-        }
-
-        .nav-overlay.active {
-            left: 0;
-        }
-
-        .close-nav {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-
-        .nav-item {
-            display: block;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .nav-item:hover {
-            background-color: rgba(128, 128, 128, 0.1);
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            background-color: rgba(255, 87, 34, 0.1);
-        }
-
-        .user-status {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        .view-section {
-            display: none;
-        }
-
-        .view-section.active {
-            display: block;
-        }
-
-        .search-container {
-            padding: 80px 20px 10px 20px;
-        }
-
-        .search-wrapper {
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 40px 12px 15px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            color: var(--text);
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .search-input:focus {
-            border-color: var(--primary);
-        }
-
-        .search-icon-abs {
-            position: absolute;
-            right: 12px;
-            top: 12px;
-            color: var(--text-sub);
-        }
-
-        #map {
-            height: 40vh;
-            width: 100%;
-            z-index: 1;
-        }
-
-        .filters {
-            display: flex;
-            overflow-x: auto;
-            padding: 15px 20px;
-            gap: 10px;
-            scrollbar-width: none;
-        }
-
-        .filters::-webkit-scrollbar {
-            display: none;
-        }
-
-        .chip {
-            padding: 8px 16px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .chip.active {
-            background: var(--primary);
-            color: white;
-            font-weight: 700;
-            border-color: var(--primary);
-        }
-
-        .listing-container {
-            padding: 10px 20px 100px 20px;
-        }
-
-        .section-title {
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-
-        .group-header-continent {
-            font-size: 1.4rem;
-            font-weight: 900;
-            margin: 30px 0 15px 0;
-            color: var(--primary);
-        }
-
-        .group-header-country {
-            font-size: 1rem;
-            font-weight: 700;
-            margin: 20px 0 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--text-sub);
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s;
-            cursor: pointer;
-            position: relative;
-            border: 1px solid var(--border);
-        }
-
-        .card:active {
-            transform: scale(0.98);
-        }
-
-        .card-img {
-            height: 150px;
-            width: 100%;
-            object-fit: cover;
-            background-color: #333;
-        }
-
-        .card-fav-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-        .card-fav-btn span {
-            color: #ffffff;
-            font-size: 1.2rem;
-        }
-
-        .card-fav-btn.active span {
-            color: #ff4444;
-        }
-
-        .card-body {
-            padding: 15px;
-        }
-
-        .card-tag {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .tag-spot {
-            background: #2196F3;
-            color: white;
-        }
-
-        .tag-jam {
-            background: #E91E63;
-            color: white;
-        }
-
-        .tag-cypher {
-            background: #FFC107;
-            color: black;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .card-meta {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .fab {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 20px rgba(255, 87, 34, 0.4);
-            border: none;
-            cursor: pointer;
-            z-index: 900;
-            transition: transform 0.2s;
-        }
-
-        .fab:hover {
-            transform: scale(1.1);
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-
-        .modal.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            border-radius: 24px;
-            position: relative;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--border);
-            transform: scale(0.9);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .modal.active .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-header-img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-        }
-
-        .modal-body {
-            padding: 25px;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 50%;
-            padding: 8px;
-            color: white;
-            cursor: pointer;
-            z-index: 10;
-            transition: background-color 0.2s;
-        }
-
-        .close-modal:hover {
-            background: rgba(0, 0, 0, 0.8);
-        }
-
-        .btn-primary {
-            width: 100%;
-            background: var(--primary);
-            border: none;
-            padding: 15px;
-            color: white;
-            font-weight: 700;
-            border-radius: 12px;
-            margin-top: 20px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        .btn-google {
-            background: white;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text);
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            border-color: var(--primary);
-        }
-
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .location-picker-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px dashed var(--border);
-            background: var(--bg);
-            color: var(--text-sub);
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .location-picker-btn:hover {
-            border-color: var(--primary);
-        }
-    </style>
-
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
@@ -514,7 +24,7 @@
         <div class="logo">
             <span class="material-icons-round">public</span> Break Atlas
         </div>
-        <div style="width: 40px;"></div> <!-- Spacer to balance header -->
+        <div style="width: 40px;"></div>
     </header>
 
     <!-- NAVIGATION MENU -->
@@ -527,9 +37,7 @@
         <div class="nav-item" onclick="switchView('crews')">My Crews</div>
         <div class="nav-item" onclick="switchView('favorites')">Favorites</div>
         <div class="nav-item" onclick="switchView('settings')">Settings</div>
-        <div class="user-status" id="userStatus">
-            Not logged in
-        </div>
+        <div class="user-status" id="userStatus">Not logged in</div>
     </div>
 
     <!-- VIEW: HOME -->
@@ -765,8 +273,7 @@
             <div class="modal-body" style="text-align: center;">
                 <h2>Join the Cypher</h2>
                 <p style="color: var(--text-sub); margin-bottom: 30px;">Connect with breakers, save spots, and register
-                    for jams.
-                </p>
+                    for jams.</p>
                 <button class="btn-primary btn-google" onclick="triggerGoogleLogin()">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
                     Continue with Google
@@ -777,533 +284,98 @@
         </div>
     </div>
 
-    <!-- FIREBASE & APP LOGIC -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <!-- MODAL: EDIT PROFILE -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <div class="close-modal" onclick="document.getElementById('editProfileModal').classList.remove('active')">
+                <span class="material-icons-round">close</span>
+            </div>
+            <div class="modal-body">
+                <h2>Edit Profile</h2>
+                <p style="color:var(--text-sub); margin-bottom:20px;">Customize your breaker profile</p>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBeet8eefoHisNGuHheICPm0HfJpGCjY60",
-            authDomain: "break-atlas-app.firebaseapp.com",
-            projectId: "break-atlas-app",
-            storageBucket: "break-atlas-app.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-
-        // Global State
-        window.currentUser = null;
-        window.isPickingLocation = false;
-        window.tempMarker = null;
-
-        // --- AUTHENTICATION ---
-        window.triggerGoogleLogin = () => {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    const user = result.user;
-                    console.log("Logged in:", user.displayName);
-                    document.getElementById('authModal').classList.remove('active');
-                }).catch((error) => {
-                    console.error("Login Error:", error);
-                    alert("Login failed: " + error.message);
-                });
-        };
-
-        window.triggerLogout = () => {
-            signOut(auth).then(() => {
-                console.log("Logged out");
-                alert("Signed out successfully.");
-            });
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            window.currentUser = user;
-            updateUIForUser(user);
-            if (user) {
-                loadProfileData(user);
-            } else {
-                const profileContent = document.getElementById('profile-content');
-                if (profileContent) {
-                    profileContent.innerHTML = `
-                        <div style="text-align:center; padding:40px;">
-                            <span class="material-icons-round" style="font-size:3rem; color:var(--text-sub);">account_circle</span>
-                            <h3>Guest User</h3>
-                            <p>Please log in to view your profile.</p>
-                            <button class="btn-primary" onclick="toggleAuth()" style="margin-top:20px;">Log In</button>
-                        </div>
-                    `;
-                }
-            }
-        });
-
-        function updateUIForUser(user) {
-            const statusEl = document.getElementById('userStatus');
-            if (user) {
-                statusEl.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <img src="${user.photoURL}" style="width:30px; height:30px; border-radius:50%;">
-                        <div style="flex:1; overflow:hidden; text-overflow:ellipsis;">${user.displayName}</div>
+                <form id="editProfileForm" onsubmit="saveProfile(event)">
+                    <div class="form-group">
+                        <label class="form-label">Display Name</label>
+                        <input type="text" class="form-input" id="editDisplayName" required>
                     </div>
-                    <button onclick="triggerLogout()" style="margin-top:10px; background:rgba(255,255,255,0.1); border:none; color:var(--text); padding:5px 10px; border-radius:5px; cursor:pointer; width:100%;">Log Out</button>
-                `;
-            } else {
-                statusEl.innerHTML = `
-                    <div style="margin-bottom:10px;">Not logged in</div>
-                    <button class="btn-primary" onclick="toggleAuth()" style="width:100%; padding:8px;">Log In</button>
-                `;
-            }
-        }
 
-        // --- PROFILE MANAGEMENT ---
-        async function loadProfileData(user) {
-            const profileContent = document.getElementById('profile-content');
-            if (!profileContent) return;
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-textarea" id="editBio"
+                            placeholder="Tell us about yourself, your crew, your style..." maxlength="300"></textarea>
+                        <small style="color:var(--text-sub); font-size:0.75rem;">Max 300 characters</small>
+                    </div>
 
-            profileContent.innerHTML = `
-                <div style="text-align:center; padding:20px;">
-                    <img src="${user.photoURL}" style="width:80px; height:80px; border-radius:50%; margin-bottom:15px; border:2px solid var(--primary);">
-                    <h2>${user.displayName}</h2>
-                    <p style="color:var(--text-sub);">${user.email}</p>
-                    <div style="margin-top:20px; display:flex; justify-content:center; gap:10px;">
-                        <div class="card" style="padding:10px 20px; text-align:center;">
-                            <div style="font-size:1.2rem; font-weight:700;">0</div>
-                            <div style="font-size:0.8rem; color:var(--text-sub);">Spots</div>
-                        </div>
-                        <div class="card" style="padding:10px 20px; text-align:center;">
-                            <div style="font-size:1.2rem; font-weight:700;">0</div>
-                            <div style="font-size:0.8rem; color:var(--text-sub);">Crews</div>
+                    <div class="form-group">
+                        <div style="display:flex; gap:10px;">
+                            <div style="flex:1;">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-input" id="editCity" placeholder="Paris">
+                            </div>
+                            <div style="flex:1;">
+                                <label class="form-label">Country</label>
+                                <input type="text" class="form-input" id="editCountry" placeholder="France">
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
-        }
 
-        // --- DATA SYNC ---
-        const q = query(collection(db, "spots"), orderBy("createdAt", "desc"));
-        onSnapshot(q, (snapshot) => {
-            const spots = [];
-            snapshot.forEach((doc) => {
-                spots.push({ id: doc.id, ...doc.data() });
-            });
-
-            if (window.updateSpotsFromFirestore) {
-                window.updateSpotsFromFirestore(spots);
-            } else {
-                window.firestoreSpots = spots;
-            }
-        });
-
-        // --- ADD SPOT LOGIC ---
-        window.submitSpot = async (e) => {
-            e.preventDefault();
-            if (!window.currentUser) {
-                alert("Please log in to add a spot.");
-                toggleAuth();
-                return;
-            }
-
-            const title = document.getElementById('addTitle').value;
-            const type = document.getElementById('addType').value;
-            const city = document.getElementById('addCity').value;
-            const country = document.getElementById('addCountry').value;
-            const continent = document.getElementById('addContinent').value;
-            const time = document.getElementById('addTime').value;
-            const desc = document.getElementById('addDesc').value;
-            const lat = parseFloat(document.getElementById('addLat').value);
-            const lng = parseFloat(document.getElementById('addLng').value);
-
-            if (!lat || !lng) {
-                alert("Please pick a location on the map.");
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, "spots"), {
-                    title, type, city, country, continent, time, desc, lat, lng,
-                    createdAt: serverTimestamp(),
-                    createdBy: window.currentUser.uid,
-                    creatorName: window.currentUser.displayName,
-                    img: null
-                });
-                alert("Spot added successfully!");
-                document.getElementById('addSpotModal').classList.remove('active');
-                document.getElementById('addSpotForm').reset();
-                document.getElementById('locPickerText').innerText = "Tap to pick on map";
-            } catch (err) {
-                console.error("Error adding spot: ", err);
-                alert("Error adding spot: " + err.message);
-            }
-        }
-
-        // --- LOCATION PICKER ---
-        window.startLocationPicker = () => {
-            window.isPickingLocation = true;
-            document.getElementById('addSpotModal').classList.remove('active');
-            alert("Tap on the map to select location.");
-        };
-
-        window.handleMapClick = (e) => {
-            if (window.isPickingLocation) {
-                const { lat, lng } = e.latlng;
-                document.getElementById('addLat').value = lat;
-                document.getElementById('addLng').value = lng;
-                document.getElementById('locPickerText').innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-
-                if (window.tempMarker && window.map) window.map.removeLayer(window.tempMarker);
-                if (window.map) window.tempMarker = L.marker([lat, lng]).addTo(window.map);
-
-                window.isPickingLocation = false;
-                document.getElementById('addSpotModal').classList.add('active');
-            }
-        };
-    </script>
-
-    <!-- MAIN APP LOGIC -->
-    <script>
-        // --- DATA & STATE ---
-        let map;
-        let markers = [];
-        let currentSpots = [];
-        let favorites = JSON.parse(localStorage.getItem('breakAtlas_favorites')) || [];
-        let settings = JSON.parse(localStorage.getItem('breakAtlas_settings')) || {
-            mapStyle: 'dark',
-            accentColor: '#FF5722'
-        };
-
-        // Keep mock data for initial population
-        const mockSpots = [
-            { id: 1, title: "Centquatre-Paris (104)", type: "spot", continent: "Europe", country: "France", city: "Paris", lat: 48.8905, lng: 2.3730, time: "Open Daily: 12:00 - 19:00", crew: "Paris City Breakers", desc: "Iconic indoor spot. Smooth floor, open to all dancers.", img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800" },
-            { id: 4, title: "Gare de Lyon", type: "spot", continent: "Europe", country: "France", city: "Paris", lat: 48.8443, lng: 2.3744, time: "Evenings & Weekends", crew: "Pokemon Crew", desc: "Underground practice spot in the station corridors.", img: "https://images.unsplash.com/photo-1550950158-d0d960dff51b?w=800" },
-            { id: 2, title: "Southbank Centre", type: "spot", continent: "Europe", country: "United Kingdom", city: "London", lat: 51.5055, lng: -0.1160, time: "Daily: 10:00 - 22:00", crew: "Soul Mavericks", desc: "Legendary concrete spot under the bridge. Bring kneepads.", img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800" },
-            { id: 6, title: "IBE Festival 2025", type: "jam", continent: "Europe", country: "Netherlands", city: "Heerlen", lat: 50.8882, lng: 5.9795, time: "August 14-16, 2025", crew: "The Notorious IBE", desc: "The ultimate Hip Hop dance festival. Cyphers everywhere.", img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800" },
-            { id: 10, title: "Berlin Hbf Tunnel", type: "cypher", continent: "Europe", country: "Germany", city: "Berlin", lat: 52.5251, lng: 13.3694, time: "Fridays: 20:00 - 23:00", crew: "Berlin Street Rockers", desc: "Underground vibe. Concrete floor.", img: "https://images.unsplash.com/photo-1560969184-10fe8719e047?w=800" },
-            { id: 9, title: "Outbreak Europe", type: "jam", continent: "Europe", country: "Slovakia", city: "Banska Bystrica", lat: 48.7363, lng: 19.1462, time: "July 2025", crew: "The Legits", desc: "Rawest vibe in Europe. 8 days of hip hop.", img: "https://images.unsplash.com/photo-1565619624098-e6598cb33852?w=800" },
-            { id: 5, title: "Yoyogi Park", type: "spot", continent: "Asia", country: "Japan", city: "Tokyo", lat: 35.6717, lng: 139.6949, time: "Sundays", crew: "Found Nation", desc: "Huge park with rockabilly and breakers near the entrance.", img: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800" },
-            { id: 8, title: "Battle of the Year", type: "jam", continent: "Asia", country: "Japan", city: "Osaka", lat: 34.6937, lng: 135.5023, time: "October 2025", crew: "BOTY", desc: "The world cup of breaking crews.", img: "https://images.unsplash.com/photo-1590559899731-a38283956c8c?w=800" },
-            { id: 12, title: "Hongdae Playground", type: "cypher", continent: "Asia", country: "South Korea", city: "Seoul", lat: 37.5575, lng: 126.9245, time: "Friday Nights", crew: "Jinjo Crew", desc: "Street performances and open sessions.", img: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800" },
-            { id: 3, title: "Washington Square Park", type: "spot", continent: "North America", country: "USA", city: "New York", lat: 40.7308, lng: -73.9973, time: "Weather permitting", crew: "Dynamic Rockers", desc: "Outdoor cyphers near the arch. Classic NYC vibe.", img: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800" },
-            { id: 11, title: "Venice Beach Boardwalk", type: "cypher", continent: "North America", country: "USA", city: "Los Angeles", lat: 33.9850, lng: -118.4695, time: "Weekends", crew: "Cali Breakers", desc: "Sunny vibes, tourists, and raw circles.", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800" },
-            { id: 7, title: "Red Bull BC One World Final", type: "jam", continent: "South America", country: "Brazil", city: "Rio de Janeiro", lat: -22.9068, lng: -43.1729, time: "November 2025", crew: "Red Bull", desc: "The biggest 1on1 battle in the world.", img: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800" }
-        ];
-
-        // --- INIT ---
-        window.firestoreSpots = [];
-
-        window.updateSpotsFromFirestore = function (spots) {
-            window.firestoreSpots = spots;
-            const allSpots = [...mockSpots, ...spots];
-            window.renderList(allSpots);
-            window.addMarkers(allSpots);
-        }
-
-        window.onload = () => {
-            applySettings();
-            initMap();
-
-            if (window.firestoreSpots && window.firestoreSpots.length > 0) {
-                window.updateSpotsFromFirestore(window.firestoreSpots);
-            } else {
-                window.renderList(mockSpots);
-                window.addMarkers(mockSpots);
-            }
-        };
-
-        // --- CORE FUNCTIONS ---
-        function initMap() {
-            if (map) map.remove();
-            map = L.map('map').setView([20, 0], 2);
-            window.map = map;
-
-            const darkTiles = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-            const lightTiles = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-
-            L.tileLayer(settings.mapStyle === 'dark' ? darkTiles : lightTiles, {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                subdomains: 'abcd',
-                maxZoom: 19
-            }).addTo(map);
-
-            // Map Click Listener for Location Picker
-            map.on('click', (e) => {
-                if (window.handleMapClick) window.handleMapClick(e);
-            });
-        }
-
-        function applySettings() {
-            document.documentElement.style.setProperty('--primary', settings.accentColor);
-            document.documentElement.setAttribute('data-theme', settings.mapStyle);
-            document.getElementById('btn-map-style').innerText = settings.mapStyle === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-            document.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('selected'));
-        }
-
-        window.addMarkers = function (data) {
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-            data.forEach(spot => {
-                const color = spot.type === 'spot' ? '#2196F3' : (spot.type === 'jam' ? '#E91E63' : '#FFC107');
-                const icon = L.divIcon({
-                    className: 'custom-div-icon',
-                    html: `<div style="background-color:${color}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow: 0 0 10px ${color};"></div>`,
-                    iconSize: [12, 12],
-                    iconAnchor: [6, 6]
-                });
-                const marker = L.marker([spot.lat, spot.lng], { icon: icon }).addTo(map);
-                marker.on('click', () => openModal(spot));
-                markers.push(marker);
-            });
-        }
-
-        window.renderList = function (data) {
-            currentSpots = data;
-            const feed = document.getElementById('feed');
-            const loader = document.getElementById('loader');
-            if (loader) loader.style.display = 'none';
-            feed.innerHTML = '';
-
-            // Sort data: Continent -> Country -> Title
-            const sortedData = [...data].sort((a, b) => {
-                const contA = a.continent || "Other";
-                const contB = b.continent || "Other";
-                if (contA !== contB) return contA.localeCompare(contB);
-
-                const countryA = a.country || "Unknown";
-                const countryB = b.country || "Unknown";
-                if (countryA !== countryB) return countryA.localeCompare(countryB);
-
-                return a.title.localeCompare(b.title);
-            });
-
-            let lastContinent = '';
-            let lastCountry = '';
-
-            sortedData.forEach(spot => {
-                const continent = spot.continent || "Other";
-                const country = spot.country || "Unknown";
-
-                if (continent !== lastContinent) {
-                    feed.innerHTML += `<div class="group-header-continent">${continent}</div>`;
-                    lastContinent = continent;
-                    lastCountry = '';
-                }
-
-                if (country !== lastCountry) {
-                    feed.innerHTML += `<div class="group-header-country"><span class="material-icons-round" style="font-size:1rem;">public</span> ${country}</div>`;
-                    lastCountry = country;
-                }
-
-                const isFav = favorites.includes(spot.id);
-                const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
-                const imgUrl = spot.img || "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800";
-
-                const card = `
-                <div class="card" onclick='openModal(${JSON.stringify(spot).replace(/'/g, "&#39;")})'>
-                    <img src="${imgUrl}" class="card-img">
-                    <div class="card-fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${spot.id}', this)">
-                        <span class="material-icons-round">favorite</span>
+                    <div class="form-group">
+                        <label class="form-label">Breaking Style</label>
+                        <select class="form-select" id="editBreakingStyle">
+                            <option value="">Select your primary style</option>
+                            <option value="Power">Power Moves</option>
+                            <option value="Footwork">Footwork</option>
+                            <option value="Top Rock">Top Rock</option>
+                            <option value="Freezes">Freezes</option>
+                            <option value="All-around">All-around</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
-                    <div class="card-body">
-                        <span class="card-tag ${tagClass}">${spot.type}</span>
-                        <div class="card-title">${spot.title}</div>
-                        <div class="card-meta">
-                            <span class="material-icons-round" style="font-size: 14px;">calendar_today</span> ${spot.time}
-                        </div>
-                        <div class="card-meta" style="margin-top:5px;">
-                            <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}
+
+                    <div class="form-group">
+                        <label class="form-label">Years of Experience</label>
+                        <input type="number" class="form-input" id="editExperience" min="0" max="50" placeholder="5">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Social Links (Optional)</label>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="color:var(--text-sub); width:30px;">IG</span>
+                                <input type="text" class="form-input" id="editInstagram" placeholder="@username"
+                                    style="flex:1;">
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="color:var(--text-sub); width:30px;">YT</span>
+                                <input type="text" class="form-input" id="editYoutube" placeholder="youtube.com/..."
+                                    style="flex:1;">
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="color:var(--text-sub); width:30px;">TT</span>
+                                <input type="text" class="form-input" id="editTiktok" placeholder="@username"
+                                    style="flex:1;">
+                            </div>
                         </div>
                     </div>
-                </div>
-                `;
-                feed.innerHTML += card;
-            });
-        }
 
-        // --- NAVIGATION & VIEWS ---
-        window.switchView = function (viewId) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const navItems = document.querySelectorAll('.nav-item');
-            if (viewId === 'home') navItems[0].classList.add('active');
-            if (viewId === 'profile') navItems[1].classList.add('active');
-            if (viewId === 'crews') navItems[2].classList.add('active');
-            if (viewId === 'favorites') navItems[3].classList.add('active');
-            if (viewId === 'settings') navItems[4].classList.add('active');
-
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(`view-${viewId}`).classList.add('active');
-
-            toggleNav();
-
-            if (viewId === 'favorites') renderFavoritesView();
-            if (viewId === 'home') setTimeout(() => map.invalidateSize(), 300);
-        }
-
-        window.toggleNav = function () {
-            document.getElementById('sideNav').classList.toggle('active');
-        }
-
-        window.toggleAuth = function () {
-            const modal = document.getElementById('authModal');
-            modal.classList.toggle('active');
-        }
-
-        window.handleAddClick = function () {
-            document.getElementById('addSpotModal').classList.add('active');
-        }
-
-        // --- FAVORITES LOGIC ---
-        window.toggleFavorite = function (id, btnElement) {
-            if (favorites.includes(id)) {
-                favorites = favorites.filter(favId => favId !== id);
-                if (btnElement) btnElement.classList.remove('active');
-            } else {
-                favorites.push(id);
-                if (btnElement) btnElement.classList.add('active');
-            }
-            localStorage.setItem('breakAtlas_favorites', JSON.stringify(favorites));
-
-            if (document.getElementById('view-favorites').classList.contains('active')) {
-                renderFavoritesView();
-            }
-        }
-
-        function renderFavoritesView() {
-            const container = document.getElementById('favorites-feed');
-            container.innerHTML = '';
-
-            const allSpots = [...mockSpots, ...currentSpots];
-            const uniqueSpots = Array.from(new Map(allSpots.map(item => [item.id, item])).values());
-            const favSpots = uniqueSpots.filter(s => favorites.includes(s.id));
-
-            if (favSpots.length === 0) {
-                container.innerHTML = `
-                <div class="empty-state" style="text-align:center; padding:40px; color:var(--text-sub);">
-                    <span class="material-icons-round" style="font-size:3rem; margin-bottom:10px;">favorite_border</span>
-                    <h3>No Favorites Yet</h3>
-                    <p>Heart spots to save them here.</p>
-                </div>
-                `;
-                return;
-            }
-
-            favSpots.forEach(spot => {
-                const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
-                const imgUrl = spot.img || "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800";
-                const card = `
-                <div class="card" onclick='openModal(${JSON.stringify(spot).replace(/'/g, "&#39;")})'>
-                    <img src="${imgUrl}" class="card-img">
-                    <div class="card-fav-btn active" onclick="event.stopPropagation(); toggleFavorite('${spot.id}', this)">
-                        <span class="material-icons-round">favorite</span>
+                    <div class="form-group">
+                        <label class="form-label">Profile Visibility</label>
+                        <select class="form-select" id="editVisibility">
+                            <option value="public">Public - Anyone can view</option>
+                            <option value="private">Private - Only you can view</option>
+                        </select>
                     </div>
-                    <div class="card-body">
-                        <span class="card-tag ${tagClass}">${spot.type}</span>
-                        <div class="card-title">${spot.title}</div>
-                        <div class="card-meta">
-                            <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}, ${spot.country}
-                        </div>
-                    </div>
-                </div>
-                `;
-                container.innerHTML += card;
-            });
-        }
 
-        // --- MODAL LOGIC ---
-        window.openModal = function (spot) {
-            const modal = document.getElementById('detailModal');
-            document.getElementById('modalImg').src = spot.img || "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800";
-            document.getElementById('modalType').innerText = spot.type;
-            document.getElementById('modalType').className = 'card-tag ' + (spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher'));
-            document.getElementById('modalTitle').innerText = spot.title;
-            document.getElementById('modalCity').innerText = `${spot.city}, ${spot.country}`;
-            document.getElementById('modalTime').innerText = spot.time;
-            document.getElementById('modalDesc').innerText = spot.desc;
+                    <button type="submit" class="btn-primary">Save Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-            const favBtn = document.getElementById('modalFavBtn');
-            if (favorites.includes(spot.id)) {
-                favBtn.innerText = 'favorite';
-                favBtn.style.color = '#ff4444';
-            } else {
-                favBtn.innerText = 'favorite_border';
-                favBtn.style.color = '#555';
-            }
-
-            modal.dataset.spotId = spot.id;
-            modal.classList.add('active');
-        }
-
-        window.closeModal = function () {
-            document.getElementById('detailModal').classList.remove('active');
-        }
-
-        window.toggleModalFavorite = function () {
-            const modal = document.getElementById('detailModal');
-            const spotId = isNaN(modal.dataset.spotId) ? modal.dataset.spotId : parseInt(modal.dataset.spotId);
-
-            toggleFavorite(spotId, null);
-
-            const favBtn = document.getElementById('modalFavBtn');
-            if (favorites.includes(spotId)) {
-                favBtn.innerText = 'favorite';
-                favBtn.style.color = '#ff4444';
-            } else {
-                favBtn.innerText = 'favorite_border';
-                favBtn.style.color = '#555';
-            }
-        }
-
-        // --- SETTINGS LOGIC ---
-        window.toggleMapStyle = function () {
-            settings.mapStyle = settings.mapStyle === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('breakAtlas_settings', JSON.stringify(settings));
-            applySettings();
-            initMap();
-            window.addMarkers(currentSpots.length > 0 ? currentSpots : mockSpots);
-        }
-
-        window.setAccentColor = function (color) {
-            settings.accentColor = color;
-            localStorage.setItem('breakAtlas_settings', JSON.stringify(settings));
-            applySettings();
-        }
-
-        window.clearData = function () {
-            if (confirm('Are you sure you want to reset all favorites and settings?')) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        // --- SEARCH & FILTER ---
-        window.filterList = function (query) {
-            const allSpots = [...mockSpots, ...window.firestoreSpots];
-            const filtered = allSpots.filter(s =>
-                s.title.toLowerCase().includes(query.toLowerCase()) ||
-                s.city.toLowerCase().includes(query.toLowerCase()) ||
-                s.country.toLowerCase().includes(query.toLowerCase())
-            );
-            window.renderList(filtered);
-        }
-
-        window.filterType = function (type, btn) {
-            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-            btn.classList.add('active');
-
-            const allSpots = [...mockSpots, ...window.firestoreSpots];
-            if (type === 'all') {
-                window.renderList(allSpots);
-                window.addMarkers(allSpots);
-            } else {
-                const filtered = allSpots.filter(s => s.type === type);
-                window.renderList(filtered);
-                window.addMarkers(filtered);
-            }
-        }
-    </script>
+    <!-- JavaScript Modules -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>
