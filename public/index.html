@@ -3,65 +3,72 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Break Atlas - The World is Your Cypher</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Break Atlas | Worldwide Breaking Spot & Jam Locator</title>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --primary: #FF5722;
             --bg: #121212;
-            --surface: #1E1E1E;
-            --text: #ffffff;
-            --text-sub: #aaaaaa;
-            --nav-height: 60px;
+            --card-bg: #1E1E1E;
+            --text: #E0E0E0;
+            --text-sub: #A0A0A0;
+            --border: rgba(255, 255, 255, 0.1);
+            --nav-bg: rgba(30, 30, 30, 0.95);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg: #F5F5F5;
+            --card-bg: #FFFFFF;
+            --text: #212121;
+            --text-sub: #757575;
+            --border: rgba(0, 0, 0, 0.1);
+            --nav-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         * {
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* --- HEADER --- */
         header {
-            height: var(--nav-height);
-            background: rgba(30, 30, 30, 0.95);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background: var(--nav-bg);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            border-bottom: 1px solid #333;
             z-index: 1000;
-            position: relative;
+            border-bottom: 1px solid var(--border);
         }
 
         .logo {
-            font-weight: 800;
+            font-weight: 900;
             font-size: 1.2rem;
             letter-spacing: -0.5px;
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .logo span {
-            color: var(--primary);
         }
 
         .icon-btn {
@@ -71,128 +78,179 @@
             cursor: pointer;
             padding: 8px;
             border-radius: 50%;
-            transition: background 0.2s;
+            transition: background-color 0.2s;
         }
 
-        .icon-btn:active {
-            background: rgba(255, 255, 255, 0.1);
+        .icon-btn:hover {
+            background-color: rgba(128, 128, 128, 0.2);
         }
 
-        /* --- NAVIGATION OVERLAY --- */
         .nav-overlay {
             position: fixed;
             top: 0;
-            left: 0;
-            width: 280px;
-            height: 100%;
-            background: var(--surface);
-            z-index: 2000;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 20px;
-            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
+            left: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 1100;
+            transition: 0.3s ease;
+            padding: 80px 20px 20px 20px;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+            border-right: 1px solid var(--border);
         }
 
         .nav-overlay.active {
-            transform: translateX(0);
-        }
-
-        .nav-item {
-            padding: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: background 0.2s;
-        }
-
-        .nav-item:active,
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--primary);
+            left: 0;
         }
 
         .close-nav {
-            align-self: flex-end;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .nav-item {
+            display: block;
+            font-size: 1.2rem;
             margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(128, 128, 128, 0.1);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background-color: rgba(255, 87, 34, 0.1);
         }
 
         .user-status {
-            margin-top: auto;
+            margin-top: 30px;
             padding-top: 20px;
-            border-top: 1px solid #333;
+            border-top: 1px solid var(--border);
             font-size: 0.9rem;
-            color: var(--text-sub);
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
-        .user-avatar-small {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #333;
-            object-fit: cover;
-        }
-
-        /* --- VIEW CONTAINER --- */
         .view-section {
             display: none;
-            flex: 1;
-            overflow: hidden;
-            flex-direction: column;
-            animation: fadeIn 0.3s ease;
         }
 
         .view-section.active {
-            display: flex;
+            display: block;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .search-container {
+            padding: 80px 20px 10px 20px;
         }
 
-        /* --- MAP & LIST (HOME VIEW) --- */
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-icon-abs {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            color: var(--text-sub);
+        }
+
         #map {
-            flex: 1;
+            height: 40vh;
             width: 100%;
             z-index: 1;
         }
 
-        .listing-container {
-            flex: 1;
-            background: var(--surface);
-            overflow-y: auto;
-            padding: 20px;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            margin-top: -20px;
-            z-index: 2;
-            position: relative;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+        .filters {
+            display: flex;
+            overflow-x: auto;
+            padding: 15px 20px;
+            gap: 10px;
+            scrollbar-width: none;
         }
 
-        /* --- CARDS --- */
-        .card {
-            background: #2a2a2a;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        .filters::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            white-space: nowrap;
             cursor: pointer;
-            transition: transform 0.1s;
+            transition: all 0.2s;
+        }
+
+        .chip.active {
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            border-color: var(--primary);
+        }
+
+        .listing-container {
+            padding: 10px 20px 100px 20px;
+        }
+
+        .section-title {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .group-header-continent {
+            font-size: 1.4rem;
+            font-weight: 900;
+            margin: 30px 0 15px 0;
+            color: var(--primary);
+        }
+
+        .group-header-country {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 20px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-sub);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+            cursor: pointer;
             position: relative;
+            border: 1px solid var(--border);
         }
 
         .card:active {
@@ -200,9 +258,35 @@
         }
 
         .card-img {
+            height: 150px;
             width: 100%;
-            height: 140px;
             object-fit: cover;
+            background-color: #333;
+        }
+
+        .card-fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .card-fav-btn span {
+            color: #ffffff;
+            font-size: 1.2rem;
+        }
+
+        .card-fav-btn.active span {
+            color: #ff4444;
         }
 
         .card-body {
@@ -210,33 +294,33 @@
         }
 
         .card-tag {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 4px;
             display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
             margin-bottom: 8px;
+            text-transform: uppercase;
         }
 
         .tag-spot {
-            background: rgba(33, 150, 243, 0.2);
-            color: #2196F3;
+            background: #2196F3;
+            color: white;
         }
 
         .tag-jam {
-            background: rgba(233, 30, 99, 0.2);
-            color: #E91E63;
+            background: #E91E63;
+            color: white;
         }
 
         .tag-cypher {
-            background: rgba(255, 193, 7, 0.2);
-            color: #FFC107;
+            background: #FFC107;
+            color: black;
         }
 
         .card-title {
-            font-weight: 700;
             font-size: 1.1rem;
+            font-weight: 700;
             margin-bottom: 5px;
         }
 
@@ -248,174 +332,114 @@
             gap: 5px;
         }
 
-        .card-fav-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 50%;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            transition: color 0.2s;
-        }
-
-        .card-fav-btn.active {
-            color: #ff4444;
-        }
-
-        /* --- FILTERS & SEARCH --- */
-        .search-container {
-            padding: 15px 20px 5px;
-            background: var(--surface);
-        }
-
-        .search-wrapper {
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 40px 12px 15px;
-            background: #333;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-family: inherit;
-        }
-
-        .search-icon-abs {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #777;
-        }
-
-        .filters {
-            display: flex;
-            gap: 10px;
-            padding: 10px 20px;
-            overflow-x: auto;
-            background: var(--surface);
-            scrollbar-width: none;
-        }
-
-        .chip {
-            padding: 6px 14px;
-            background: #333;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-
-        .chip.active {
-            background: rgba(255, 87, 34, 0.2);
-            color: var(--primary);
-            border-color: var(--primary);
-        }
-
-        /* --- FAB --- */
         .fab {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             right: 20px;
             width: 56px;
             height: 56px;
-            background: var(--primary);
             border-radius: 50%;
+            background: var(--primary);
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.4);
-            color: white;
+            box-shadow: 0 8px 20px rgba(255, 87, 34, 0.4);
             border: none;
             cursor: pointer;
-            z-index: 100;
+            z-index: 900;
             transition: transform 0.2s;
         }
 
-        .fab:active {
-            transform: scale(0.9);
+        .fab:hover {
+            transform: scale(1.1);
         }
 
-        /* --- MODALS --- */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 3000;
-            display: none;
-            align-items: flex-end;
-            /* Bottom sheet on mobile */
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            display: flex;
             justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
         }
 
         .modal.active {
-            display: flex;
+            visibility: visible;
+            opacity: 1;
         }
 
         .modal-content {
-            background: var(--surface);
+            background: var(--card-bg);
             width: 100%;
             max-width: 500px;
-            height: 85vh;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            position: relative;
+            max-height: 90vh;
             overflow-y: auto;
-            animation: slideUp 0.3s ease;
+            border-radius: 24px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes slideUp {
-            from {
-                transform: translateY(100%);
-            }
-
-            to {
-                transform: translateY(0);
-            }
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 50%;
-            padding: 5px;
-            cursor: pointer;
-            z-index: 10;
+        .modal.active .modal-content {
+            transform: scale(1);
         }
 
         .modal-header-img {
             width: 100%;
             height: 250px;
             object-fit: cover;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
         }
 
         .modal-body {
             padding: 25px;
         }
 
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            padding: 8px;
+            color: white;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.2s;
+        }
+
+        .close-modal:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
         .btn-primary {
             width: 100%;
-            padding: 15px;
             background: var(--primary);
             border: none;
-            border-radius: 10px;
+            padding: 15px;
             color: white;
             font-weight: 700;
-            font-size: 1rem;
+            border-radius: 12px;
             margin-top: 20px;
             cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
         }
 
         .btn-google {
@@ -427,37 +451,14 @@
             gap: 10px;
         }
 
-        /* --- GROUP HEADERS --- */
-        .group-header-continent {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text);
-            margin: 30px 0 15px 0;
-            padding-bottom: 5px;
-            border-bottom: 2px solid var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .group-header-country {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-sub);
-            margin: 15px 0 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* --- FORMS --- */
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 5px;
-            color: var(--text-sub);
+            margin-bottom: 8px;
+            font-weight: 600;
             font-size: 0.9rem;
         }
 
@@ -466,92 +467,61 @@
         .form-textarea {
             width: 100%;
             padding: 12px;
-            background: #333;
-            border: 1px solid #444;
             border-radius: 8px;
-            color: white;
-            font-family: inherit;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--primary);
         }
 
         .form-textarea {
+            min-height: 100px;
             resize: vertical;
-            min-height: 80px;
+            font-family: 'Inter', sans-serif;
         }
 
-        /* --- PROFILE --- */
-        .profile-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .profile-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .profile-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .profile-email {
-            color: var(--text-sub);
-            font-size: 0.9rem;
-        }
-
-        /* --- LOCATION PICKER --- */
         .location-picker-btn {
-            background: #333;
-            border: 1px dashed #666;
-            color: var(--text-sub);
-            width: 100%;
-            padding: 15px;
-            border-radius: 8px;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .location-picker-btn.picked {
-            border-style: solid;
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* --- LEAFLET CUSTOM --- */
-        .leaflet-popup-content-wrapper {
-            background: #222;
-            color: white;
+            gap: 10px;
+            padding: 12px;
             border-radius: 8px;
+            border: 1px dashed var(--border);
+            background: var(--bg);
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: border-color 0.2s;
         }
 
-        .leaflet-popup-tip {
-            background: #222;
+        .location-picker-btn:hover {
+            border-color: var(--primary);
         }
     </style>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
 <body>
-
-    <!-- HEADER -->
     <header>
+        <button class="icon-btn" onclick="toggleNav()"><span class="material-icons-round">menu</span></button>
         <div class="logo">
             <span class="material-icons-round">public</span> Break Atlas
         </div>
-        <button class="icon-btn" onclick="toggleNav()"><span class="material-icons-round">menu</span></button>
+        <div style="width: 40px;"></div> <!-- Spacer to balance header -->
     </header>
 
     <!-- NAVIGATION MENU -->
     <div class="nav-overlay" id="sideNav">
         <button class="icon-btn close-nav" onclick="toggleNav()"><span
                 class="material-icons-round">close</span></button>
-        <div style="margin-bottom: 30px; opacity: 0.5; font-size: 0.9rem;">MENU</div>
+        <div style="margin-bottom: 30px; opacity: 0.5; font-size: 0.9rem; color: var(--text);">MENU</div>
         <div class="nav-item active" onclick="switchView('home')">Home</div>
         <div class="nav-item" onclick="switchView('profile')">My Profile</div>
         <div class="nav-item" onclick="switchView('crews')">My Crews</div>
@@ -603,7 +573,8 @@
     <!-- VIEW: MY CREWS -->
     <div id="view-crews" class="view-section">
         <div class="listing-container">
-            <div class="section-title" style="font-size:1.2rem; font-weight:700; margin-bottom:20px;">
+            <div class="section-title"
+                style="font-size:1.2rem; font-weight:700; margin-bottom:20px; color: var(--text);">
                 My Crews
                 <button onclick="alert('Create Crew feature coming soon!')"
                     style="background:none; border:none; color:var(--primary); font-weight:700; cursor:pointer; float:right;">+
@@ -615,7 +586,7 @@
                     <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=200"
                         style="width:50px; height:50px; border-radius:50%; margin-right:15px; object-fit:cover;">
                     <div style="flex:1;">
-                        <div style="font-weight: 700;">Paris City Breakers</div>
+                        <div style="font-weight: 700; color: var(--text);">Paris City Breakers</div>
                         <div style="color: var(--text-sub); font-size: 0.85rem;">Paris, France • 12 Members</div>
                     </div>
                     <button class="btn-primary"
@@ -628,7 +599,8 @@
     <!-- VIEW: FAVORITES -->
     <div id="view-favorites" class="view-section">
         <div class="listing-container">
-            <div class="section-title" style="font-size:1.2rem; font-weight:700; margin-bottom:20px;">Saved Spots & Jams
+            <div class="section-title"
+                style="font-size:1.2rem; font-weight:700; margin-bottom:20px; color: var(--text);">Saved Spots & Jams
             </div>
             <div id="favorites-feed"></div>
         </div>
@@ -637,12 +609,13 @@
     <!-- VIEW: SETTINGS -->
     <div id="view-settings" class="view-section">
         <div class="listing-container">
-            <div class="section-title" style="font-size:1.2rem; font-weight:700; margin-bottom:20px;">App Settings</div>
+            <div class="section-title"
+                style="font-size:1.2rem; font-weight:700; margin-bottom:20px; color: var(--text);">App Settings</div>
 
             <div class="form-group">
                 <div class="form-label">Map Style</div>
                 <button onclick="toggleMapStyle()" id="btn-map-style"
-                    style="background:#333; color:white; border:none; padding:12px; border-radius:8px; cursor:pointer; width:100%;">Dark
+                    style="background:var(--bg); color:var(--text); border:1px solid rgba(128,128,128,0.3); padding:12px; border-radius:8px; cursor:pointer; width:100%;">Dark
                     Mode</button>
             </div>
 
@@ -691,7 +664,7 @@
                     <span class="material-icons-round" style="font-size:1rem">location_on</span> <span
                         id="modalCity"></span>
                 </p>
-                <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+                <hr style="border: 0; border-top: 1px solid rgba(128,128,128,0.2); margin: 20px 0;">
                 <h3 style="font-size:1rem; margin-bottom:10px;">Schedule</h3>
                 <p id="modalTime" style="color: var(--text-sub); margin-top: 5px;"></p>
 
@@ -712,7 +685,8 @@
             </div>
             <div class="modal-body">
                 <h2>Add New Spot</h2>
-                <p style="color:#888; margin-bottom:20px;">Share a training spot, jam, or cypher with the community.</p>
+                <p style="color:var(--text-sub); margin-bottom:20px;">Share a training spot, jam, or cypher with the
+                    community.</p>
 
                 <form id="addSpotForm" onsubmit="submitSpot(event)">
                     <div class="form-group">
@@ -790,196 +764,159 @@
             </div>
             <div class="modal-body" style="text-align: center;">
                 <h2>Join the Cypher</h2>
-                <p style="color: #999; margin-bottom: 30px;">Connect with breakers, save spots, and register for jams.
+                <p style="color: var(--text-sub); margin-bottom: 30px;">Connect with breakers, save spots, and register
+                    for jams.
                 </p>
                 <button class="btn-primary btn-google" onclick="triggerGoogleLogin()">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20">
                     Continue with Google
                 </button>
-                <p style="font-size: 0.8rem; margin-top: 15px; color: #555;">By continuing, you agree to our Terms.</p>
+                <p style="font-size: 0.8rem; margin-top: 15px; color: var(--text-sub);">By continuing, you agree to our
+                    Terms.</p>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <!-- FIREBASE SDKs -->
+    <!-- FIREBASE & APP LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // --- CONFIGURATION ---
-        // REPLACE WITH YOUR ACTUAL CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyBeet8eefoHisNGuHheICPm0HfJpGCjY60",
-            authDomain: "break-atlas.firebaseapp.com",
-            projectId: "break-atlas",
-            storageBucket: "break-atlas.appspot.com",
-            messagingSenderId: "247742707248",
-            appId: "1:247742707248:web:a1a734e465aa95e7dedff5"
+            authDomain: "break-atlas-app.firebaseapp.com",
+            projectId: "break-atlas-app",
+            storageBucket: "break-atlas-app.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // --- STATE ---
-        let currentUser = null;
-        let isPickingLocation = false;
-        let tempMarker = null;
+        // Global State
+        window.currentUser = null;
+        window.isPickingLocation = false;
+        window.tempMarker = null;
 
-        // --- AUTH FUNCTIONS ---
-        window.triggerGoogleLogin = async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                toggleAuth(); // Close modal
-                // Check if user exists in DB, if not create
-                const userRef = doc(db, "users", result.user.uid);
-                const userSnap = await getDoc(userRef);
-                if (!userSnap.exists()) {
-                    await setDoc(userRef, {
-                        uid: result.user.uid,
-                        displayName: result.user.displayName,
-                        email: result.user.email,
-                        photoURL: result.user.photoURL,
-                        bio: "Just joined the cypher.",
-                        crew: "",
-                        instagram: ""
-                    });
-                }
-            } catch (error) {
-                console.error("Login failed", error);
-                alert("Login failed: " + error.message);
-            }
+        // --- AUTHENTICATION ---
+        window.triggerGoogleLogin = () => {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    console.log("Logged in:", user.displayName);
+                    document.getElementById('authModal').classList.remove('active');
+                }).catch((error) => {
+                    console.error("Login Error:", error);
+                    alert("Login failed: " + error.message);
+                });
         };
 
-        window.triggerLogout = () => signOut(auth);
+        window.triggerLogout = () => {
+            signOut(auth).then(() => {
+                console.log("Logged out");
+                alert("Signed out successfully.");
+            });
+        };
 
         onAuthStateChanged(auth, (user) => {
-            currentUser = user;
+            window.currentUser = user;
             updateUIForUser(user);
+            if (user) {
+                loadProfileData(user);
+            } else {
+                const profileContent = document.getElementById('profile-content');
+                if (profileContent) {
+                    profileContent.innerHTML = `
+                        <div style="text-align:center; padding:40px;">
+                            <span class="material-icons-round" style="font-size:3rem; color:var(--text-sub);">account_circle</span>
+                            <h3>Guest User</h3>
+                            <p>Please log in to view your profile.</p>
+                            <button class="btn-primary" onclick="toggleAuth()" style="margin-top:20px;">Log In</button>
+                        </div>
+                    `;
+                }
+            }
         });
 
         function updateUIForUser(user) {
             const statusEl = document.getElementById('userStatus');
-            const profileContent = document.getElementById('profile-content');
-
             if (user) {
                 statusEl.innerHTML = `
-                    <img src="${user.photoURL}" class="user-avatar-small">
-                    <div style="flex:1;">
-                        <div style="font-weight:bold;">${user.displayName}</div>
-                        <div style="font-size:0.8rem; color:var(--primary); cursor:pointer;" onclick="triggerLogout()">Log Out</div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${user.photoURL}" style="width:30px; height:30px; border-radius:50%;">
+                        <div style="flex:1; overflow:hidden; text-overflow:ellipsis;">${user.displayName}</div>
                     </div>
+                    <button onclick="triggerLogout()" style="margin-top:10px; background:rgba(255,255,255,0.1); border:none; color:var(--text); padding:5px 10px; border-radius:5px; cursor:pointer; width:100%;">Log Out</button>
                 `;
-
-                // Load Profile Data
-                loadProfileData(user.uid);
-
             } else {
                 statusEl.innerHTML = `
-                    <span class="material-icons-round">account_circle</span>
-                    <div onclick="toggleAuth()" style="cursor:pointer; text-decoration:underline;">Log In / Sign Up</div>
-                `;
-
-                profileContent.innerHTML = `
-                    <div style="text-align:center; padding:50px 20px;">
-                        <span class="material-icons-round" style="font-size:4rem; color:#333;">lock</span>
-                        <h3>Login Required</h3>
-                        <p style="color:#888; margin-bottom:20px;">Please login to view and edit your profile.</p>
-                        <button class="btn-primary" onclick="toggleAuth()">Login with Google</button>
-                    </div>
+                    <div style="margin-bottom:10px;">Not logged in</div>
+                    <button class="btn-primary" onclick="toggleAuth()" style="width:100%; padding:8px;">Log In</button>
                 `;
             }
         }
 
-        // --- PROFILE LOGIC ---
-        async function loadProfileData(uid) {
-            const userRef = doc(db, "users", uid);
-            const snap = await getDoc(userRef);
-            if (snap.exists()) {
-                const data = snap.data();
-                const profileContent = document.getElementById('profile-content');
-                profileContent.innerHTML = `
-                    <div class="profile-header">
-                        <img src="${data.photoURL}" class="profile-avatar">
-                        <div class="profile-name">${data.displayName}</div>
-                        <div class="profile-email">${data.email}</div>
+        // --- PROFILE MANAGEMENT ---
+        async function loadProfileData(user) {
+            const profileContent = document.getElementById('profile-content');
+            if (!profileContent) return;
+
+            profileContent.innerHTML = `
+                <div style="text-align:center; padding:20px;">
+                    <img src="${user.photoURL}" style="width:80px; height:80px; border-radius:50%; margin-bottom:15px; border:2px solid var(--primary);">
+                    <h2>${user.displayName}</h2>
+                    <p style="color:var(--text-sub);">${user.email}</p>
+                    <div style="margin-top:20px; display:flex; justify-content:center; gap:10px;">
+                        <div class="card" style="padding:10px 20px; text-align:center;">
+                            <div style="font-size:1.2rem; font-weight:700;">0</div>
+                            <div style="font-size:0.8rem; color:var(--text-sub);">Spots</div>
+                        </div>
+                        <div class="card" style="padding:10px 20px; text-align:center;">
+                            <div style="font-size:1.2rem; font-weight:700;">0</div>
+                            <div style="font-size:0.8rem; color:var(--text-sub);">Crews</div>
+                        </div>
                     </div>
-                    
-                    <form onsubmit="updateProfile(event, '${uid}')">
-                        <div class="form-group">
-                            <label class="form-label">Bio</label>
-                            <textarea class="form-textarea" id="profileBio">${data.bio || ''}</textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Crew</label>
-                            <input type="text" class="form-input" id="profileCrew" value="${data.crew || ''}" placeholder="e.g. Rock Steady Crew">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Instagram Handle</label>
-                            <input type="text" class="form-input" id="profileInsta" value="${data.instagram || ''}" placeholder="@username">
-                        </div>
-                        <button type="submit" class="btn-primary">Save Profile</button>
-                    </form>
-                `;
-            }
+                </div>
+            `;
         }
 
-        window.updateProfile = async (e, uid) => {
-            e.preventDefault();
-            const bio = document.getElementById('profileBio').value;
-            const crew = document.getElementById('profileCrew').value;
-            const insta = document.getElementById('profileInsta').value;
-
-            try {
-                await setDoc(doc(db, "users", uid), {
-                    bio, crew, instagram: insta
-                }, { merge: true });
-                alert("Profile updated!");
-            } catch (err) {
-                console.error(err);
-                alert("Error updating profile.");
-            }
-        };
-
-        // --- FIRESTORE DATA FETCHING ---
-        // Listen to 'spots' collection
-        const q = query(collection(db, "spots")); // You can add orderBy here if you have a timestamp
+        // --- DATA SYNC ---
+        const q = query(collection(db, "spots"), orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             const spots = [];
             snapshot.forEach((doc) => {
                 spots.push({ id: doc.id, ...doc.data() });
             });
-            // Merge with mock data for now, or replace. Let's merge so we don't lose the nice mock data.
-            // In a real app, we'd migrate mock data to DB.
-            const allSpots = [...mockSpots, ...spots];
-            window.renderList(allSpots);
-            window.addMarkers(allSpots);
+
+            if (window.updateSpotsFromFirestore) {
+                window.updateSpotsFromFirestore(spots);
+            } else {
+                window.firestoreSpots = spots;
+            }
         });
 
         // --- ADD SPOT LOGIC ---
         window.submitSpot = async (e) => {
             e.preventDefault();
-            if (!currentUser) {
-                alert("You must be logged in to add a spot.");
+            if (!window.currentUser) {
+                alert("Please log in to add a spot.");
                 toggleAuth();
                 return;
             }
 
             const title = document.getElementById('addTitle').value;
             const type = document.getElementById('addType').value;
-            const lat = parseFloat(document.getElementById('addLat').value);
-            const lng = parseFloat(document.getElementById('addLng').value);
             const city = document.getElementById('addCity').value;
             const country = document.getElementById('addCountry').value;
             const continent = document.getElementById('addContinent').value;
             const time = document.getElementById('addTime').value;
             const desc = document.getElementById('addDesc').value;
+            const lat = parseFloat(document.getElementById('addLat').value);
+            const lng = parseFloat(document.getElementById('addLng').value);
 
             if (!lat || !lng) {
                 alert("Please pick a location on the map.");
@@ -988,51 +925,43 @@
 
             try {
                 await addDoc(collection(db, "spots"), {
-                    title, type, lat, lng, city, country, continent, time, desc,
-                    createdBy: currentUser.uid,
-                    createdAt: new Date().toISOString(),
-                    img: "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800" // Default image for now
+                    title, type, city, country, continent, time, desc, lat, lng,
+                    createdAt: serverTimestamp(),
+                    createdBy: window.currentUser.uid,
+                    creatorName: window.currentUser.displayName,
+                    img: null
                 });
-
+                alert("Spot added successfully!");
                 document.getElementById('addSpotModal').classList.remove('active');
                 document.getElementById('addSpotForm').reset();
                 document.getElementById('locPickerText').innerText = "Tap to pick on map";
-                document.getElementById('locPickerBtn').classList.remove('picked');
-                alert("Spot added successfully!");
             } catch (err) {
                 console.error("Error adding spot: ", err);
-                alert("Error adding spot.");
+                alert("Error adding spot: " + err.message);
             }
-        };
+        }
 
         // --- LOCATION PICKER ---
         window.startLocationPicker = () => {
+            window.isPickingLocation = true;
             document.getElementById('addSpotModal').classList.remove('active');
-            isPickingLocation = true;
-            alert("Tap anywhere on the map to set the location.");
+            alert("Tap on the map to select location.");
         };
 
-        // Expose map click handler
         window.handleMapClick = (e) => {
-            if (isPickingLocation) {
+            if (window.isPickingLocation) {
                 const { lat, lng } = e.latlng;
+                document.getElementById('addLat').value = lat;
+                document.getElementById('addLng').value = lng;
+                document.getElementById('locPickerText').innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 
-                if (tempMarker) map.removeLayer(tempMarker);
-                tempMarker = L.marker([lat, lng]).addTo(map);
+                if (window.tempMarker && window.map) window.map.removeLayer(window.tempMarker);
+                if (window.map) window.tempMarker = L.marker([lat, lng]).addTo(window.map);
 
-                if (confirm("Use this location?")) {
-                    document.getElementById('addLat').value = lat;
-                    document.getElementById('addLng').value = lng;
-                    document.getElementById('locPickerText').innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-                    document.getElementById('locPickerBtn').classList.add('picked');
-
-                    isPickingLocation = false;
-                    if (tempMarker) map.removeLayer(tempMarker);
-                    document.getElementById('addSpotModal').classList.add('active');
-                }
+                window.isPickingLocation = false;
+                document.getElementById('addSpotModal').classList.add('active');
             }
         };
-
     </script>
 
     <!-- MAIN APP LOGIC -->
@@ -1049,39 +978,47 @@
 
         // Keep mock data for initial population
         const mockSpots = [
-            // EUROPE
             { id: 1, title: "Centquatre-Paris (104)", type: "spot", continent: "Europe", country: "France", city: "Paris", lat: 48.8905, lng: 2.3730, time: "Open Daily: 12:00 - 19:00", crew: "Paris City Breakers", desc: "Iconic indoor spot. Smooth floor, open to all dancers.", img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800" },
             { id: 4, title: "Gare de Lyon", type: "spot", continent: "Europe", country: "France", city: "Paris", lat: 48.8443, lng: 2.3744, time: "Evenings & Weekends", crew: "Pokemon Crew", desc: "Underground practice spot in the station corridors.", img: "https://images.unsplash.com/photo-1550950158-d0d960dff51b?w=800" },
             { id: 2, title: "Southbank Centre", type: "spot", continent: "Europe", country: "United Kingdom", city: "London", lat: 51.5055, lng: -0.1160, time: "Daily: 10:00 - 22:00", crew: "Soul Mavericks", desc: "Legendary concrete spot under the bridge. Bring kneepads.", img: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800" },
             { id: 6, title: "IBE Festival 2025", type: "jam", continent: "Europe", country: "Netherlands", city: "Heerlen", lat: 50.8882, lng: 5.9795, time: "August 14-16, 2025", crew: "The Notorious IBE", desc: "The ultimate Hip Hop dance festival. Cyphers everywhere.", img: "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800" },
             { id: 10, title: "Berlin Hbf Tunnel", type: "cypher", continent: "Europe", country: "Germany", city: "Berlin", lat: 52.5251, lng: 13.3694, time: "Fridays: 20:00 - 23:00", crew: "Berlin Street Rockers", desc: "Underground vibe. Concrete floor.", img: "https://images.unsplash.com/photo-1560969184-10fe8719e047?w=800" },
             { id: 9, title: "Outbreak Europe", type: "jam", continent: "Europe", country: "Slovakia", city: "Banska Bystrica", lat: 48.7363, lng: 19.1462, time: "July 2025", crew: "The Legits", desc: "Rawest vibe in Europe. 8 days of hip hop.", img: "https://images.unsplash.com/photo-1565619624098-e6598cb33852?w=800" },
-
-            // ASIA
             { id: 5, title: "Yoyogi Park", type: "spot", continent: "Asia", country: "Japan", city: "Tokyo", lat: 35.6717, lng: 139.6949, time: "Sundays", crew: "Found Nation", desc: "Huge park with rockabilly and breakers near the entrance.", img: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800" },
             { id: 8, title: "Battle of the Year", type: "jam", continent: "Asia", country: "Japan", city: "Osaka", lat: 34.6937, lng: 135.5023, time: "October 2025", crew: "BOTY", desc: "The world cup of breaking crews.", img: "https://images.unsplash.com/photo-1590559899731-a38283956c8c?w=800" },
             { id: 12, title: "Hongdae Playground", type: "cypher", continent: "Asia", country: "South Korea", city: "Seoul", lat: 37.5575, lng: 126.9245, time: "Friday Nights", crew: "Jinjo Crew", desc: "Street performances and open sessions.", img: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800" },
-
-            // NORTH AMERICA
             { id: 3, title: "Washington Square Park", type: "spot", continent: "North America", country: "USA", city: "New York", lat: 40.7308, lng: -73.9973, time: "Weather permitting", crew: "Dynamic Rockers", desc: "Outdoor cyphers near the arch. Classic NYC vibe.", img: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800" },
             { id: 11, title: "Venice Beach Boardwalk", type: "cypher", continent: "North America", country: "USA", city: "Los Angeles", lat: 33.9850, lng: -118.4695, time: "Weekends", crew: "Cali Breakers", desc: "Sunny vibes, tourists, and raw circles.", img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800" },
-
-            // SOUTH AMERICA
             { id: 7, title: "Red Bull BC One World Final", type: "jam", continent: "South America", country: "Brazil", city: "Rio de Janeiro", lat: -22.9068, lng: -43.1729, time: "November 2025", crew: "Red Bull", desc: "The biggest 1on1 battle in the world.", img: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800" }
         ];
 
         // --- INIT ---
+        window.firestoreSpots = [];
+
+        window.updateSpotsFromFirestore = function (spots) {
+            window.firestoreSpots = spots;
+            const allSpots = [...mockSpots, ...spots];
+            window.renderList(allSpots);
+            window.addMarkers(allSpots);
+        }
+
         window.onload = () => {
             applySettings();
             initMap();
-            window.renderList(mockSpots); // Initial render
-            window.addMarkers(mockSpots);
+
+            if (window.firestoreSpots && window.firestoreSpots.length > 0) {
+                window.updateSpotsFromFirestore(window.firestoreSpots);
+            } else {
+                window.renderList(mockSpots);
+                window.addMarkers(mockSpots);
+            }
         };
 
         // --- CORE FUNCTIONS ---
         function initMap() {
             if (map) map.remove();
             map = L.map('map').setView([20, 0], 2);
+            window.map = map;
 
             const darkTiles = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
             const lightTiles = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
@@ -1100,6 +1037,7 @@
 
         function applySettings() {
             document.documentElement.style.setProperty('--primary', settings.accentColor);
+            document.documentElement.setAttribute('data-theme', settings.mapStyle);
             document.getElementById('btn-map-style').innerText = settings.mapStyle === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
             document.querySelectorAll('.color-dot').forEach(dot => dot.classList.remove('selected'));
         }
@@ -1161,26 +1099,25 @@
 
                 const isFav = favorites.includes(spot.id);
                 const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
-                // Use default image if none provided (for new spots)
                 const imgUrl = spot.img || "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800";
 
                 const card = `
-                    <div class="card" onclick='openModal(${JSON.stringify(spot).replace(/'/g, "&#39;")})'>
-                        <img src="${imgUrl}" class="card-img">
-                        <div class="card-fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${spot.id}', this)">
-                            <span class="material-icons-round">favorite</span>
+                <div class="card" onclick='openModal(${JSON.stringify(spot).replace(/'/g, "&#39;")})'>
+                    <img src="${imgUrl}" class="card-img">
+                    <div class="card-fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${spot.id}', this)">
+                        <span class="material-icons-round">favorite</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-tag ${tagClass}">${spot.type}</span>
+                        <div class="card-title">${spot.title}</div>
+                        <div class="card-meta">
+                            <span class="material-icons-round" style="font-size: 14px;">calendar_today</span> ${spot.time}
                         </div>
-                        <div class="card-body">
-                            <span class="card-tag ${tagClass}">${spot.type}</span>
-                            <div class="card-title">${spot.title}</div>
-                            <div class="card-meta">
-                                <span class="material-icons-round" style="font-size: 14px;">calendar_today</span> ${spot.time}
-                            </div>
-                            <div class="card-meta" style="margin-top:5px;">
-                                <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}
-                            </div>
+                        <div class="card-meta" style="margin-top:5px;">
+                            <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}
                         </div>
                     </div>
+                </div>
                 `;
                 feed.innerHTML += card;
             });
@@ -1190,7 +1127,6 @@
         window.switchView = function (viewId) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const navItems = document.querySelectorAll('.nav-item');
-            // Simple mapping based on index is risky if order changes, but works for now
             if (viewId === 'home') navItems[0].classList.add('active');
             if (viewId === 'profile') navItems[1].classList.add('active');
             if (viewId === 'crews') navItems[2].classList.add('active');
@@ -1216,8 +1152,6 @@
         }
 
         window.handleAddClick = function () {
-            // Check if logged in handled in submit, but better UX to check here
-            // We can just open the modal and let the submit handler check auth, or check here.
             document.getElementById('addSpotModal').classList.add('active');
         }
 
@@ -1235,31 +1169,23 @@
             if (document.getElementById('view-favorites').classList.contains('active')) {
                 renderFavoritesView();
             }
-            // Re-render home if active to update hearts
-            if (document.getElementById('view-home').classList.contains('active')) {
-                // We don't want to full re-render as it resets scroll, just toggle class if possible
-                // But for simplicity, we leave it or re-render.
-            }
         }
 
         function renderFavoritesView() {
             const container = document.getElementById('favorites-feed');
             container.innerHTML = '';
 
-            // Combine mock and current spots for lookup
             const allSpots = [...mockSpots, ...currentSpots];
-            // Deduplicate based on ID
             const uniqueSpots = Array.from(new Map(allSpots.map(item => [item.id, item])).values());
-
             const favSpots = uniqueSpots.filter(s => favorites.includes(s.id));
 
             if (favSpots.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-state" style="text-align:center; padding:40px; color:#666;">
-                        <span class="material-icons-round" style="font-size:3rem; margin-bottom:10px;">favorite_border</span>
-                        <h3>No Favorites Yet</h3>
-                        <p>Heart spots to save them here.</p>
-                    </div>
+                <div class="empty-state" style="text-align:center; padding:40px; color:var(--text-sub);">
+                    <span class="material-icons-round" style="font-size:3rem; margin-bottom:10px;">favorite_border</span>
+                    <h3>No Favorites Yet</h3>
+                    <p>Heart spots to save them here.</p>
+                </div>
                 `;
                 return;
             }
@@ -1268,19 +1194,19 @@
                 const tagClass = spot.type === 'spot' ? 'tag-spot' : (spot.type === 'jam' ? 'tag-jam' : 'tag-cypher');
                 const imgUrl = spot.img || "https://images.unsplash.com/photo-1535525153412-5a42439a210d?w=800";
                 const card = `
-                    <div class="card" onclick='openModal(${JSON.stringify(spot).replace(/'/g, "&#39;")})'>
-                        <img src="${imgUrl}" class="card-img">
-                        <div class="card-fav-btn active" onclick="event.stopPropagation(); toggleFavorite('${spot.id}', this)">
-                            <span class="material-icons-round">favorite</span>
-                        </div>
-                        <div class="card-body">
-                            <span class="card-tag ${tagClass}">${spot.type}</span>
-                            <div class="card-title">${spot.title}</div>
-                            <div class="card-meta">
-                                <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}, ${spot.country}
-                            </div>
+                <div class="card" onclick='openModal(${JSON.stringify(spot).replace(/'/g, "&#39;")})'>
+                    <img src="${imgUrl}" class="card-img">
+                    <div class="card-fav-btn active" onclick="event.stopPropagation(); toggleFavorite('${spot.id}', this)">
+                        <span class="material-icons-round">favorite</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-tag ${tagClass}">${spot.type}</span>
+                        <div class="card-title">${spot.title}</div>
+                        <div class="card-meta">
+                            <span class="material-icons-round" style="font-size: 14px;">location_on</span> ${spot.city}, ${spot.country}
                         </div>
                     </div>
+                </div>
                 `;
                 container.innerHTML += card;
             });
@@ -1297,7 +1223,6 @@
             document.getElementById('modalTime').innerText = spot.time;
             document.getElementById('modalDesc').innerText = spot.desc;
 
-            // Check favorite status
             const favBtn = document.getElementById('modalFavBtn');
             if (favorites.includes(spot.id)) {
                 favBtn.innerText = 'favorite';
@@ -1307,9 +1232,7 @@
                 favBtn.style.color = '#555';
             }
 
-            // Store current spot ID on the modal for toggling
             modal.dataset.spotId = spot.id;
-
             modal.classList.add('active');
         }
 
@@ -1319,11 +1242,10 @@
 
         window.toggleModalFavorite = function () {
             const modal = document.getElementById('detailModal');
-            const spotId = isNaN(modal.dataset.spotId) ? modal.dataset.spotId : parseInt(modal.dataset.spotId); // Handle string/int IDs
+            const spotId = isNaN(modal.dataset.spotId) ? modal.dataset.spotId : parseInt(modal.dataset.spotId);
 
             toggleFavorite(spotId, null);
 
-            // Update button state immediately
             const favBtn = document.getElementById('modalFavBtn');
             if (favorites.includes(spotId)) {
                 favBtn.innerText = 'favorite';
@@ -1340,7 +1262,7 @@
             localStorage.setItem('breakAtlas_settings', JSON.stringify(settings));
             applySettings();
             initMap();
-            window.addMarkers(currentSpots);
+            window.addMarkers(currentSpots.length > 0 ? currentSpots : mockSpots);
         }
 
         window.setAccentColor = function (color) {
@@ -1358,25 +1280,12 @@
 
         // --- SEARCH & FILTER ---
         window.filterList = function (query) {
-            const filtered = currentSpots.filter(s =>
+            const allSpots = [...mockSpots, ...window.firestoreSpots];
+            const filtered = allSpots.filter(s =>
                 s.title.toLowerCase().includes(query.toLowerCase()) ||
                 s.city.toLowerCase().includes(query.toLowerCase()) ||
                 s.country.toLowerCase().includes(query.toLowerCase())
             );
-            // We need to re-render but keep the "currentSpots" as the full list for reference? 
-            // Actually renderList updates currentSpots. Let's fix that.
-            // We should filter from a "master list" but we have mixed sources (mock + db).
-            // For now, let's just re-render the filtered subset.
-            // Note: This simple implementation might break if we fetch new data while filtering.
-
-            // Re-render only the feed part, not updating currentSpots global
-            const feed = document.getElementById('feed');
-            feed.innerHTML = '';
-            // ... (Duplicate render logic? Better to refactor renderList to accept data)
-            // For this prototype, let's just call renderList but it will overwrite currentSpots.
-            // A better way is to have masterSpots and displayedSpots.
-            // Let's just do a quick DOM filter for simplicity or re-use renderList.
-            // Re-using renderList is fine.
             window.renderList(filtered);
         }
 
@@ -1384,19 +1293,16 @@
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
 
-            // We need the full list to filter from.
-            // Since we don't have a global "allSpots", we might lose data if we filter a filtered list.
-            // Let's assume currentSpots is sufficient or we need to store allSpots globally.
-            // For now, let's just reload from mock + DB (which is tricky without a separate store).
-            // Let's just filter visually or rely on the fact that we should store `allLoadedSpots`.
-
-            // IMPROVEMENT: Store all loaded spots
-            // For now, let's just say "Filter not fully implemented for mixed data" or try best effort.
-            // Actually, the onSnapshot updates `renderList` with everything.
-            // Let's just trigger a re-fetch or store it.
-            // We will skip complex client-side filtering logic for this step to keep code small.
+            const allSpots = [...mockSpots, ...window.firestoreSpots];
+            if (type === 'all') {
+                window.renderList(allSpots);
+                window.addMarkers(allSpots);
+            } else {
+                const filtered = allSpots.filter(s => s.type === type);
+                window.renderList(filtered);
+                window.addMarkers(filtered);
+            }
         }
-
     </script>
 </body>
 
