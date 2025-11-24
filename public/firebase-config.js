@@ -29,14 +29,44 @@ window.tempMarker = null;
 
 // --- AUTHENTICATION ---
 window.triggerGoogleLogin = () => {
+    console.log("🔐 Initiating Google Sign-In...");
     signInWithPopup(auth, provider)
         .then((result) => {
             const user = result.user;
-            console.log("Logged in:", user.displayName);
+            console.log("✅ Logged in successfully:", user.displayName);
+            console.log("User UID:", user.uid);
+            console.log("User Email:", user.email);
             document.getElementById('authModal').classList.remove('active');
         }).catch((error) => {
-            console.error("Login Error:", error);
-            alert("Login failed: " + error.message);
+            console.error("❌ Login Error:", error);
+            console.error("Error Code:", error.code);
+            console.error("Error Message:", error.message);
+
+            // Provide user-friendly error messages
+            let userMessage = "Login failed: " + error.message;
+
+            if (error.code === 'auth/unauthorized-domain') {
+                userMessage = `❌ Domain not authorized!\n\nThe domain '${window.location.origin}' is not authorized for OAuth.\n\nFix:\n1. Go to Firebase Console → Authentication → Settings\n2. Add '${window.location.hostname}' to Authorized domains\n3. Also add to Google Cloud Console OAuth settings`;
+                console.error("🔧 FIX: Add this domain to Firebase authorized domains:", window.location.hostname);
+            } else if (error.code === 'auth/popup-blocked') {
+                userMessage = "❌ Pop-up blocked! Please allow pop-ups for this site and try again.";
+            } else if (error.code === 'auth/popup-closed-by-user') {
+                userMessage = "Login cancelled - you closed the pop-up.";
+            } else if (error.code === 'auth/network-request-failed') {
+                userMessage = "❌ Network error! Check your internet connection.";
+            }
+
+            alert(userMessage);
+
+            // Log helpful debugging info
+            console.log("📋 Debug Info:");
+            console.log("- Current URL:", window.location.href);
+            console.log("- Origin:", window.location.origin);
+            console.log("- Hostname:", window.location.hostname);
+            console.log("\n💡 Quick Fixes:");
+            console.log("1. Add '" + window.location.hostname + "' to Firebase authorized domains");
+            console.log("2. Add '" + window.location.origin + "' to Google Cloud OAuth settings");
+            console.log("3. Check Firebase Console: https://console.firebase.google.com/project/break-atlas-app/authentication/settings");
         });
 };
 
@@ -165,9 +195,9 @@ async function loadProfileData(user) {
 }
 
 // Open edit profile modal and populate form
-window.openEditProfile = async function() {
+window.openEditProfile = async function () {
     if (!window.currentUser) return;
-    
+
     const profileDoc = await getDoc(doc(db, "users", window.currentUser.uid));
     const profileData = profileDoc.exists() ? profileDoc.data() : {};
 
@@ -188,7 +218,7 @@ window.openEditProfile = async function() {
 }
 
 // Save profile data
-window.saveProfile = async function(e) {
+window.saveProfile = async function (e) {
     e.preventDefault();
     if (!window.currentUser) return;
 
@@ -219,7 +249,7 @@ window.saveProfile = async function(e) {
         await setDoc(doc(db, "users", window.currentUser.uid), profileData, { merge: true });
         alert("Profile updated successfully!");
         document.getElementById('editProfileModal').classList.remove('active');
-        
+
         // Reload profile
         loadProfileData(window.currentUser);
     } catch (error) {
